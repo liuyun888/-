@@ -1322,6 +1322,206 @@
             </div>
         </transition>
 
+        <!-- ==================== 车险投保 (照搬原型模板-智能车险报价三步骤) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'carInsuranceApply'" class="absolute inset-0 z-50 bg-[#f5f5f9] flex flex-col overflow-hidden">
+                <div class="pt-12 pb-3 px-4 bg-white flex items-center shadow-sm relative z-10">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800 absolute left-1/2 transform -translate-x-1/2">智能车险报价</h1>
+                    <span class="absolute right-4 text-xs text-blue-600 font-medium cursor-pointer" @click="showToast('报价记录')">报价记录</span>
+                </div>
+                <div class="flex-1 overflow-y-auto hide-scrollbar">
+                    <!-- 步骤一：输入车辆信息 -->
+                    <div v-show="carQuoteStep === 1">
+                        <div class="bg-blue-600 px-5 pt-6 pb-16 text-white relative">
+                            <h2 class="text-2xl font-bold mb-1 tracking-wide">极速车险报价</h2>
+                            <p class="text-sm text-blue-100 opacity-90">支持全国28省市 · 极速获取多保司底价</p>
+                            <i data-lucide="shield-check" class="w-20 h-20 absolute right-4 top-4 opacity-20"></i>
+                        </div>
+                        <div class="px-4 -mt-10 relative z-10">
+                            <div class="bg-white rounded-2xl shadow-lg p-5">
+                                <h3 class="text-sm font-bold text-gray-800 mb-4 flex items-center">
+                                    <span class="w-1 h-3 bg-blue-600 rounded-full mr-2"></span> 车辆信息
+                                </h3>
+                                <div class="border-2 border-blue-500 rounded-xl overflow-hidden flex h-14 mb-4 items-center relative">
+                                    <div class="bg-blue-500 text-white h-full px-4 flex items-center font-bold text-lg justify-center min-w-[3rem]">鲁 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 mt-0.5"></i></div>
+                                    <input type="text" v-model="plateNumber" placeholder="请输入车牌号码" class="flex-1 h-full px-4 text-lg font-bold text-gray-800 outline-none uppercase tracking-wider placeholder-gray-300">
+                                    <div class="absolute right-2 top-2 bottom-2 w-10 bg-gray-50 rounded-lg flex items-center justify-center cursor-pointer active:bg-gray-200" @click="simulateCarOCR">
+                                        <i data-lucide="camera" class="w-5 h-5 text-blue-600"></i>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center mb-6 px-1">
+                                    <label class="flex items-center text-sm text-gray-600 cursor-pointer">
+                                        <input type="checkbox" v-model="carNewCar" class="w-4 h-4 rounded border-gray-300 text-blue-600 mr-2 accent-blue-600"> 新车未上牌
+                                    </label>
+                                    <label class="flex items-center text-sm text-gray-600 cursor-pointer">
+                                        <input type="checkbox" v-model="carPublicPlate" class="w-4 h-4 rounded border-gray-300 text-blue-600 mr-2 accent-blue-600"> 公牌车
+                                    </label>
+                                </div>
+                                <div class="border-b border-gray-100 pb-4 mb-4 flex items-center justify-between">
+                                    <span class="text-gray-500 text-sm">投保城市</span>
+                                    <div class="flex items-center font-semibold text-gray-800 cursor-pointer" @click="showToast('选择城市')">青岛市 <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400 ml-1"></i></div>
+                                </div>
+                                <div class="pb-2 flex items-center justify-between">
+                                    <span class="text-gray-500 text-sm">投保人证件</span>
+                                    <input type="text" placeholder="选填，影响精准报价" class="text-right text-sm outline-none w-32 font-medium text-gray-800 border-0">
+                                </div>
+                            </div>
+                            <div class="mt-6 text-xs text-gray-400 text-center flex items-center justify-center">
+                                <i data-lucide="lock" class="w-3 h-3 mr-1"></i> 平台严格保障客户信息安全
+                            </div>
+                            <div class="mt-6">
+                                <button class="w-full bg-blue-600 text-white font-bold text-lg py-3.5 rounded-full shadow-lg shadow-blue-200 active:scale-95 transition-transform" @click="carQuoteGoToSchemeConfig">下一步：配置方案</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 步骤二：配置险种方案 -->
+                    <div v-show="carQuoteStep === 2" class="bg-white min-h-full pb-20">
+                        <div class="p-4 bg-blue-50 flex items-center justify-between text-sm">
+                            <div class="font-bold text-blue-800">鲁B·{{ plateNumber || '88888' }}</div>
+                            <div class="text-blue-600 flex items-center cursor-pointer" @click="carQuoteStep = 1">重新选车 <i data-lucide="edit-3" class="w-3 h-3 ml-1"></i></div>
+                        </div>
+                        <div class="p-4 border-b-8 border-gray-50">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-lg text-gray-800">交强险及车船税</h3>
+                                <div class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded">国家法定</div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600 text-sm">交强险 (含车船税)</span>
+                                <input type="checkbox" checked disabled class="w-5 h-5 accent-blue-600">
+                            </div>
+                        </div>
+                        <div class="p-4 border-b-8 border-gray-50 pb-24">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-lg text-gray-800">商业险</h3>
+                                <div class="text-blue-600 text-sm font-medium flex items-center border border-blue-600 px-2 py-1 rounded-full cursor-pointer" @click="showToast('沿用去年方案')">沿用去年方案 <i data-lucide="refresh-cw" class="w-3 h-3 ml-1"></i></div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <div class="text-gray-800 font-medium text-sm">机动车损失险</div>
+                                        <div class="text-gray-400 text-xs mt-0.5">全额承保车损风险</div>
+                                    </div>
+                                    <input type="checkbox" checked class="w-5 h-5 accent-blue-600">
+                                </div>
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div>
+                                        <div class="text-gray-800 font-medium text-sm">第三者责任险</div>
+                                        <div class="text-gray-400 text-xs mt-0.5">理赔他人损失</div>
+                                    </div>
+                                    <select class="border border-gray-200 text-sm rounded px-2 py-1 outline-none text-gray-700 bg-white mr-2">
+                                        <option>200万</option><option selected>300万</option><option>500万</option>
+                                    </select>
+                                    <input type="checkbox" checked class="w-5 h-5 accent-blue-600">
+                                </div>
+                                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+                                    <div class="text-gray-800 font-medium text-sm">车上人员责任险 (司机)</div>
+                                    <select class="border border-gray-200 text-sm rounded px-2 py-1 outline-none text-gray-700 bg-white mr-2">
+                                        <option>1万</option><option selected>5万</option>
+                                    </select>
+                                    <input type="checkbox" checked class="w-5 h-5 accent-blue-600">
+                                </div>
+                                <div class="flex items-center justify-between pb-3">
+                                    <div class="text-gray-800 font-medium text-sm">车上人员责任险 (乘客)</div>
+                                    <select class="border border-gray-200 text-sm rounded px-2 py-1 outline-none text-gray-700 bg-white mr-2">
+                                        <option>1万/座</option><option selected>5万/座</option>
+                                    </select>
+                                    <input type="checkbox" checked class="w-5 h-5 accent-blue-600">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 pb-8 flex shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                            <button class="flex-1 bg-gray-100 text-gray-700 font-bold py-3 rounded-full mr-3 text-sm" @click="showToast('已存草稿')">存草稿</button>
+                            <button class="flex-[2] bg-blue-600 text-white font-bold py-3 rounded-full shadow-lg shadow-blue-200 flex justify-center items-center" @click="carQuoteStartQuoting">一键获取多保司报价</button>
+                        </div>
+                    </div>
+                    <!-- 步骤三：报价结果 -->
+                    <div v-show="carQuoteStep === 3" class="p-4 pb-24">
+                        <div v-if="isCarQuoting" class="bg-white rounded-xl shadow-sm p-6 flex flex-col items-center justify-center min-h-[300px]">
+                            <div class="relative w-24 h-24 mb-4">
+                                <svg class="animate-spin text-blue-100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" fill="#2563eb"></path>
+                                </svg>
+                                <i data-lucide="shield" class="absolute inset-0 m-auto w-8 h-8 text-blue-600"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800">智能引擎正在询价</h3>
+                            <p class="text-sm text-gray-500 mt-2">平安、人保、太保等保司同步核算中...</p>
+                            <div class="w-full bg-gray-100 h-2 rounded-full mt-6 overflow-hidden">
+                                <div class="bg-blue-600 h-full w-2/3 rounded-full transition-all duration-1000 ease-out"></div>
+                            </div>
+                        </div>
+                        <div v-else class="space-y-4">
+                            <div class="flex justify-between items-end mb-2">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-800">报价结果概览</h2>
+                                    <p class="text-xs text-gray-500 mt-1">方案：交强险 + 商业险 (车损/三者300万等)</p>
+                                </div>
+                                <button class="text-xs text-blue-600 font-medium" @click="carQuoteStep = 2">修改方案</button>
+                            </div>
+                            <div v-for="(result, index) in carQuoteResults" :key="result.id" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 relative overflow-hidden">
+                                <div v-if="result.recommend" class="absolute -right-8 top-3 bg-red-500 text-white text-[10px] font-bold py-1 w-28 text-center transform rotate-45 shadow">平台推荐</div>
+                                <div class="flex items-center justify-between border-b border-gray-50 pb-3 mb-3">
+                                    <div class="flex items-center">
+                                        <div :class="`w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs mr-3 ${result.color}`">{{ result.name.substring(0,2) }}</div>
+                                        <div>
+                                            <div class="font-bold text-gray-800">{{ result.name }}</div>
+                                            <div class="flex mt-1 space-x-1">
+                                                <span v-for="tag in result.tags" :key="tag" class="text-[10px] px-1.5 bg-gray-100 text-gray-500 rounded">{{ tag }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-[10px] text-gray-400">总保费</div>
+                                        <div class="text-lg font-bold text-red-500"><span class="text-xs">¥</span>{{ result.premium }}</div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 mb-3 px-1">
+                                    <span>交强代收: ¥950</span>
+                                    <span>商业险: ¥{{ result.premium - 950 }}</span>
+                                </div>
+                                <div class="bg-orange-50 rounded-lg p-2.5 flex justify-between items-center mb-3">
+                                    <div class="flex items-center text-orange-600 font-medium text-xs"><i data-lucide="gift" class="w-4 h-4 mr-1"></i> 预估展业佣金</div>
+                                    <div class="font-bold text-orange-600">¥ {{ result.commission }}</div>
+                                </div>
+                                <div class="flex space-x-3 mt-4">
+                                    <button class="flex-1 border border-blue-600 text-blue-600 py-2 rounded-full text-sm font-medium" @click="showToast('已复制投保链接')">发给客户</button>
+                                    <button class="flex-1 bg-blue-600 text-white py-2 rounded-full text-sm font-medium shadow-md shadow-blue-200" @click="showToast('正在生成精美报价单海报...')">生成报价单</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <!-- ==================== 车险续保 (按截图：可续保车辆/未到续保期 Tab + 筛选 + 空态) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'carInsuranceRenewal'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-blue-600 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2 text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6"></i></span>
+                    <span class="cursor-pointer p-2 text-white" @click="currentTab = 'home'; goBack();"><i data-lucide="home" class="w-5 h-5"></i></span>
+                    <h1 class="text-base font-bold text-white absolute left-1/2 transform -translate-x-1/2">车险续保</h1>
+                </div>
+                <!-- 主 Tab：可续保车辆 | 未到续保期 -->
+                <div class="bg-white flex border-b border-gray-100">
+                    <div :class="carRenewalMainTab === 'renewable' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500'" class="flex-1 py-3 text-center text-sm font-medium cursor-pointer" @click="carRenewalMainTab = 'renewable'">可续保车辆</div>
+                    <div :class="carRenewalMainTab === 'notDue' ? 'bg-blue-600 text-white' : 'bg-white text-gray-500'" class="flex-1 py-3 text-center text-sm font-medium cursor-pointer" @click="carRenewalMainTab = 'notDue'">未到续保期</div>
+                </div>
+                <!-- 子 Tab：全部 | 未报价 | 已报价 | 待支付 | 已成交 | 战败 + 筛选图标 -->
+                <div class="bg-white flex items-center justify-between px-4 py-2 border-b border-gray-100 overflow-x-auto hide-scrollbar">
+                    <div class="flex items-center gap-4 text-sm text-gray-600 flex-shrink-0">
+                        <span v-for="opt in carRenewalSubTabs" :key="opt.id" :class="carRenewalSubTab === opt.id ? 'text-blue-600 font-medium border-b-2 border-blue-600 pb-1' : ''" class="cursor-pointer whitespace-nowrap" @click="carRenewalSubTab = opt.id">{{ opt.name }}</span>
+                    </div>
+                    <span class="cursor-pointer p-1.5 text-gray-500 flex-shrink-0" @click="showToast('筛选')"><i data-lucide="filter" class="w-5 h-5"></i></span>
+                </div>
+                <!-- 内容区：空态 -->
+                <div class="flex-1 flex flex-col items-center justify-center px-6 bg-gray-100/50">
+                    <i data-lucide="file-text" class="w-20 h-20 text-gray-300 mb-4"></i>
+                    <p class="text-sm text-gray-500">没有数据</p>
+                </div>
+            </div>
+        </transition>
+
         <!-- ==================== 18. 续保管理 (Renewal Manage) ==================== -->
         <transition name="slide-in-right">
             <div v-if="activePage === 'renewalManage'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
@@ -3008,6 +3208,8 @@
                 const hasOnboarded = ref(false); // 代理人是否已入职成功，可切换以查看首页入口变化
                 const onboardApproved = ref(false); // 审核是否通过（通过后可投保），可在审核中页点击「模拟审核通过」
                 const homeActionsBefore = [
+                    { name: '车险投保', icon: 'car', bgClass: 'bg-blue-500', iconColor: 'text-blue-600' },
+                    { name: '车险续保', icon: 'file-check', bgClass: 'bg-emerald-500', iconColor: 'text-emerald-600' },
                     { name: '加入保通', icon: 'badge-plus', bgClass: 'bg-blue-500', iconColor: 'text-blue-600', badge: '必读' },
                     { name: '领万元奖', icon: 'gift', bgClass: 'bg-red-500', iconColor: 'text-red-500', badge: '金标' },
                     { name: '导师带教', icon: 'graduation-cap', bgClass: 'bg-orange-500', iconColor: 'text-orange-500', badge: '1v1' },
@@ -3020,6 +3222,8 @@
                     { name: '增员专区', icon: 'user-plus', bgClass: 'bg-red-400', iconColor: 'text-red-500' }
                 ];
                 const homeActionsAfter = [
+                    { name: '车险投保', icon: 'car', bgClass: 'bg-blue-500', iconColor: 'text-blue-600' },
+                    { name: '车险续保', icon: 'file-check', bgClass: 'bg-emerald-500', iconColor: 'text-emerald-600' },
                     { name: '朋友圈', icon: 'aperture', bgClass: 'bg-purple-500', iconColor: 'text-purple-500', badge: '日签' },
                     { name: 'i生活', icon: 'coffee', bgClass: 'bg-green-500', iconColor: 'text-green-500' },
                     { name: '客户管理', icon: 'users', bgClass: 'bg-blue-500', iconColor: 'text-blue-600' },
@@ -3144,6 +3348,45 @@
                 const performSearchWord = (word) => { searchQuery.value = word; performSearch(); };
                 const startAIChat = () => { isAIChatMode.value = true; setTimeout(() => refreshIcons(), 50); };
                 const customizationStep = ref(0);
+
+                // ============= 车险投保(智能报价) / 车险续保 =============
+                const carQuoteStep = ref(1);
+                const plateNumber = ref('');
+                const isCarQuoting = ref(false);
+                const carNewCar = ref(false);
+                const carPublicPlate = ref(false);
+                const carQuoteResults = ref([
+                    { id: 3, name: '太平洋车险', premium: 3550, commission: 950, tags: ['理赔极速', '增值服务多'], color: 'bg-blue-600', recommend: true },
+                    { id: 1, name: '平安车险', premium: 3580, commission: 895, tags: ['网点覆盖广', '口碑好'], color: 'bg-orange-500', recommend: false },
+                    { id: 2, name: '人保车险', premium: 3620, commission: 905, tags: ['国企老牌', '大案保障'], color: 'bg-red-600', recommend: false }
+                ]);
+                const simulateCarOCR = () => {
+                    showToast('正在调用摄像头扫描行驶证...');
+                    setTimeout(() => { plateNumber.value = '88888'; showToast('识别成功'); refreshIcons(); }, 800);
+                };
+                const carQuoteGoToSchemeConfig = () => {
+                    if (!plateNumber.value && !carNewCar.value) { showToast('请输入车牌或勾选新车未上牌'); return; }
+                    carQuoteStep.value = 2;
+                };
+                const carQuoteStartQuoting = () => {
+                    carQuoteStep.value = 3;
+                    isCarQuoting.value = true;
+                    setTimeout(() => {
+                        isCarQuoting.value = false;
+                        showToast('多保司报价获取完成');
+                        refreshIcons();
+                    }, 2500);
+                };
+                const carRenewalMainTab = ref('renewable');
+                const carRenewalSubTab = ref('all');
+                const carRenewalSubTabs = [
+                    { id: 'all', name: '全部' },
+                    { id: 'unquoted', name: '未报价' },
+                    { id: 'quoted', name: '已报价' },
+                    { id: 'pending', name: '待支付' },
+                    { id: 'done', name: '已成交' },
+                    { id: 'failed', name: '战败' }
+                ];
 
                 // ============= 计划书模块数据 =============
                 const planRegion = ref('全国');
@@ -3407,7 +3650,9 @@
 
                 // ============= 其他基础交互逻辑 =============
                 const handleHomeAction = (item) => {
-                    if(item.name === '加入保通') { onboardStep.value = 0; goToPage('onboard'); }
+                    if(item.name === '车险投保') goToPage('carInsuranceApply');
+                    else if(item.name === '车险续保') goToPage('carInsuranceRenewal');
+                    else if(item.name === '加入保通') { onboardStep.value = 0; goToPage('onboard'); }
                     else if(item.name === '领万元奖') goToPage('activityReward');
                     else if(item.name === '导师带教') goToPage('tutorList');
                     else if(item.name === 'i生活') goToPage('iLife');
@@ -3451,7 +3696,14 @@
                     const opts = renewalSortOptions.value;
                     if (opts.length && !opts.includes(renewalSort.value)) renewalSort.value = opts[0];
                 });
-                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep, honorWallTab, renewalCategory, renewalStatus, showProductFilter, applyStep, trainingTab, planCategory, xingluoMaterialTab, xingluoDataTab, xingluoContentTab, xingluoCourseTab, xingluoGradeTab], refreshIcons);
+                watch(activePage, (p) => {
+                    if (p === 'carInsuranceApply') {
+                        carQuoteStep.value = 1;
+                        plateNumber.value = '';
+                        isCarQuoting.value = false;
+                    }
+                });
+                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep, honorWallTab, renewalCategory, renewalStatus, showProductFilter, applyStep, trainingTab, planCategory, xingluoMaterialTab, xingluoDataTab, xingluoContentTab, xingluoCourseTab, xingluoGradeTab, carQuoteStep, carRenewalMainTab, carRenewalSubTab], refreshIcons);
 
                 onMounted(() => { refreshIcons(); });
 
@@ -3494,6 +3746,10 @@
                     toggleProductCompany, resetProductFilter, applyProductFilter,
                     productMaterialEntries, applyStep, goToPlanFromProduct, goToApplyFromProduct,
                     onboardApproved,
+                    // 车险投保(报价) / 车险续保
+                    carQuoteStep, plateNumber, isCarQuoting, carNewCar, carPublicPlate, carQuoteResults,
+                    simulateCarOCR, carQuoteGoToSchemeConfig, carQuoteStartQuoting,
+                    carRenewalMainTab, carRenewalSubTab, carRenewalSubTabs,
                     // 星罗计划（自媒体短视频培训）
                     xingluoMaterialTab, xingluoMaterials, xingluoHotList, xingluoDataTab, xingluoRankList,
                     xingluoBootcampList, xingluoContentTab, xingluoScriptList, xingluoCourseTab, xingluoCourseList, xingluoGradeTab

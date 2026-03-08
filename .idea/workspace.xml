@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1d9ba269-71ca-4b30-bfad-ffa2d12ca462" name="Changes" comment="计划书">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="1d9ba269-71ca-4b30-bfad-ffa2d12ca462" name="Changes" comment="星罗计划">
       <change beforePath="$PROJECT_DIR$/09 原型/APP.html" beforeDir="false" afterPath="$PROJECT_DIR$/09 原型/APP.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -69,6 +68,7 @@
       <workItem from="1772961107918" duration="355000" />
       <workItem from="1772961465335" duration="17000" />
       <workItem from="1772961484733" duration="385000" />
+      <workItem from="1772961872013" duration="602000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -118,7 +118,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772961475894</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="星罗计划">
+      <option name="closed" value="true" />
+      <created>1772961885004</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1772961885004</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -129,6 +137,7 @@
     <MESSAGE value="2" />
     <MESSAGE value="培训" />
     <MESSAGE value="计划书" />
-    <option name="LAST_COMMIT_MESSAGE" value="计划书" />
+    <MESSAGE value="星罗计划" />
+    <option name="LAST_COMMIT_MESSAGE" value="星罗计划" />
   </component>
 </project>

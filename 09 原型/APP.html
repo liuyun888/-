@@ -167,19 +167,72 @@
                         </div>
                     </div>
 
-                    <!-- 推荐产品流 -->
-                    <div class="px-4 mt-4 grid grid-cols-2 gap-3">
-                        <div v-for="prod in products.slice(0,4)" :key="prod.id" class="bg-white rounded-xl p-3 shadow-sm" @click="goToPage('productDetail', prod)">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="font-bold text-gray-800 text-sm leading-tight">{{prod.name}}</div>
-                                <span v-if="prod.tags.includes('金标')" class="bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[9px] px-1 rounded scale-90 origin-top-right">金标</span>
+                    <!-- 15. 首页-荣誉体系 -->
+                    <div class="px-4 mt-4 cursor-pointer" @click="goToPage('honorSystem')">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 py-2 flex items-center justify-between">
+                                <span class="text-white font-bold text-sm flex items-center"><i data-lucide="medal" class="w-4 h-4 mr-2"></i>荣誉体系</span>
+                                <span class="text-white/90 text-xs">查看详情 <i data-lucide="chevron-right" class="w-3 h-3 inline"></i></span>
                             </div>
-                            <div class="text-[10px] text-gray-500 mb-2 h-6 line-clamp-2">{{prod.shortDesc}}</div>
-                            <div class="border-t border-dashed border-gray-200 pt-2 flex justify-between items-end">
-                                <div class="text-orange-500 font-semibold text-xs">
-                                    宣传奖励<br>{{prod.commission}}
+                            <div class="p-3 grid grid-cols-4 gap-2 text-center">
+                                <div><div class="text-base font-bold text-gray-800">--</div><div class="text-[10px] text-gray-500">个人业绩</div></div>
+                                <div><div class="text-base font-bold text-gray-800">--</div><div class="text-[10px] text-gray-500">个人排名</div></div>
+                                <div><div class="text-base font-bold text-gray-800">--</div><div class="text-[10px] text-gray-500">团队排名</div></div>
+                                <div><div class="text-base font-bold text-gray-800">荣誉墙</div><div class="text-[10px] text-gray-500">月/季/年</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 16. 首页-增员专区 -->
+                    <div class="px-4 mt-3 cursor-pointer" @click="goToPage('recruit')">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-gradient-to-r from-red-500 to-orange-400 px-4 py-2 flex items-center justify-between">
+                                <span class="text-white font-bold text-sm flex items-center"><i data-lucide="user-plus" class="w-4 h-4 mr-2"></i>增员专区</span>
+                                <span class="text-white/90 text-xs">邀请有奖 <i data-lucide="chevron-right" class="w-3 h-3 inline"></i></span>
+                            </div>
+                            <div class="p-3 flex justify-around text-center text-xs">
+                                <div><div class="text-blue-600 font-bold">增员利益</div><div class="text-gray-500">推荐人·被推荐人</div></div>
+                                <div><div class="text-blue-600 font-bold">邀请链接/海报</div><div class="text-gray-500">增员活动·素材</div></div>
+                                <div><div class="text-blue-600 font-bold">增员课程</div><div class="text-gray-500" v-if="recruitInviteCount >= 0">已邀请 {{ recruitInviteCount }} 人</div><div class="text-gray-500" v-else>邀请好友入职</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 17. 首页-产品展示（按类型分组，上下滑动） -->
+                    <div class="px-4 mt-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-sm font-bold text-gray-800">推荐产品</h3>
+                            <span class="text-xs text-blue-600 cursor-pointer" @click="currentTab = 'products'">更多 <i data-lucide="chevron-right" class="w-3 h-3 inline"></i></span>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto hide-scrollbar rounded-xl border border-gray-100 bg-white/50 space-y-4 py-3">
+                            <div v-for="group in productGroups" :key="group.type" class="px-3">
+                                <div class="text-xs font-bold text-gray-500 mb-2 pl-1">{{ group.type }}</div>
+                                <div class="space-y-2">
+                                    <div v-for="prod in group.list" :key="prod.id" class="bg-white rounded-lg p-3 shadow-sm border border-gray-50 flex cursor-pointer" @click="goToPage('productDetail', prod)">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between gap-2">
+                                                <span class="font-bold text-gray-800 text-sm leading-tight">{{ prod.name }}</span>
+                                                <span v-for="t in (prod.tags || []).slice(0,2)" :key="t" class="text-[9px] px-1 rounded flex-shrink-0" :class="t==='金标'?'bg-gradient-to-r from-yellow-400 to-orange-400 text-white':'bg-gray-100 text-gray-600'">{{ t }}</span>
+                                            </div>
+                                            <div class="text-[10px] text-gray-500 mt-1 line-clamp-2">{{ prod.shortDesc }}</div>
+                                            <div class="text-[10px] text-orange-500 font-medium mt-1">{{ prod.incentive || '宣传奖励 ' + prod.commission }}</div>
+                                        </div>
+                                        <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id}`" class="w-10 h-10 rounded bg-gray-50 flex-shrink-0">
+                                    </div>
                                 </div>
-                                <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id}`" class="w-8 h-8 rounded bg-gray-50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 18. 首页-续保管理 -->
+                    <div class="px-4 mt-4 mb-4 cursor-pointer" @click="goToPage('renewalManage')">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 flex items-center justify-between">
+                                <span class="text-white font-bold text-sm flex items-center"><i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>续保管理</span>
+                                <span class="text-white/90 text-xs">待处理 · 续收规则 <i data-lucide="chevron-right" class="w-3 h-3 inline"></i></span>
+                            </div>
+                            <div class="p-3 flex justify-between text-sm text-gray-600">
+                                <span>按保单类型/状态/续收方式筛选</span>
                             </div>
                         </div>
                     </div>
@@ -1048,16 +1101,266 @@
             </div>
         </transition>
 
-        <!-- ==================== 增员专区 (Recruit) ==================== -->
+        <!-- ==================== 15. 荣誉体系 (Honor System) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'honorSystem'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">荣誉体系</h1>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <!-- 个人业绩 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="trending-up" class="w-4 h-4 mr-2 text-blue-500"></i>个人业绩</h3>
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="bg-gray-50 rounded-lg py-3"><div class="text-lg font-bold text-gray-800">--</div><div class="text-[10px] text-gray-500">本月保费</div></div>
+                            <div class="bg-gray-50 rounded-lg py-3"><div class="text-lg font-bold text-gray-800">--</div><div class="text-[10px] text-gray-500">本月件数</div></div>
+                            <div class="bg-gray-50 rounded-lg py-3"><div class="text-lg font-bold text-gray-800">--</div><div class="text-[10px] text-gray-500">累计业绩</div></div>
+                        </div>
+                    </div>
+                    <!-- 个人业绩排名 / 团队业绩排名 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="award" class="w-4 h-4 mr-2 text-amber-500"></i>业绩排名</h3>
+                        <div class="flex space-x-3">
+                            <div class="flex-1 border border-amber-200 bg-amber-50 rounded-lg p-3 text-center">
+                                <div class="text-xs text-amber-700 font-bold">个人业绩排名</div>
+                                <div class="text-2xl font-black text-amber-600 mt-1">--</div>
+                                <div class="text-[10px] text-gray-500">名</div>
+                            </div>
+                            <div class="flex-1 border border-blue-200 bg-blue-50 rounded-lg p-3 text-center">
+                                <div class="text-xs text-blue-700 font-bold">团队业绩排名</div>
+                                <div class="text-2xl font-black text-blue-600 mt-1">--</div>
+                                <div class="text-[10px] text-gray-500">名</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 荣誉墙 月度/季度/年度 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="medal" class="w-4 h-4 mr-2 text-yellow-500"></i>荣誉墙</h3>
+                        <div class="flex space-x-2 mb-3 overflow-x-auto hide-scrollbar">
+                            <span :class="honorWallTab === 'month' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap" @click="honorWallTab = 'month'">月度</span>
+                            <span :class="honorWallTab === 'quarter' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap" @click="honorWallTab = 'quarter'">季度</span>
+                            <span :class="honorWallTab === 'year' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap" @click="honorWallTab = 'year'">年度</span>
+                        </div>
+                        <div class="flex flex-col items-center justify-center py-8 text-gray-400">
+                            <i data-lucide="trophy" class="w-12 h-12 mb-2 opacity-30"></i>
+                            <p class="text-sm">暂无{{ honorWallTab === 'month' ? '月度' : honorWallTab === 'quarter' ? '季度' : '年度' }}荣誉记录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 16. 增员专区 (Recruit) 完整版 ==================== -->
         <transition name="slide-in-right">
             <div v-if="activePage === 'recruit'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
                 <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
                     <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
-                    <h1 class="text-base font-bold text-gray-800">增员专区</h1>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">增员专区</h1>
                 </div>
-                <div class="flex-1 flex flex-col items-center justify-center p-6 text-gray-500">
-                    <i data-lucide="user-plus" class="w-16 h-16 mb-4 opacity-30"></i>
-                    <p class="text-sm text-center">邀请好友加入，领取奖励</p>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <!-- 成功入职后：增员邀请好友人数统计 -->
+                    <div v-if="recruitInviteCount >= 0" class="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-4 text-white mb-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs opacity-90">已邀请好友入职</div>
+                                <div class="text-2xl font-black mt-1">{{ recruitInviteCount }} 人</div>
+                            </div>
+                            <i data-lucide="users" class="w-12 h-12 opacity-80"></i>
+                        </div>
+                    </div>
+                    <!-- 增员利益：推荐人、被推荐人 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="gift" class="w-4 h-4 mr-2 text-red-500"></i>增员利益</h3>
+                        <div class="flex space-x-3">
+                            <div class="flex-1 border border-red-100 bg-red-50 rounded-lg p-3">
+                                <div class="text-xs font-bold text-red-700">推荐人</div>
+                                <div class="text-[10px] text-gray-600 mt-1">邀请奖励、持续津贴、团队管理奖</div>
+                            </div>
+                            <div class="flex-1 border border-orange-100 bg-orange-50 rounded-lg p-3">
+                                <div class="text-xs font-bold text-orange-700">被推荐人</div>
+                                <div class="text-[10px] text-gray-600 mt-1">新人礼、首单加佣、培训支持</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 增员活动 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="megaphone" class="w-4 h-4 mr-2 text-blue-500"></i>增员活动</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer" @click="showToast('活动详情：春季增员季')">
+                                <span class="text-sm font-medium text-gray-800">春季增员季</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer" @click="showToast('活动详情：推荐有礼')">
+                                <span class="text-sm font-medium text-gray-800">推荐有礼</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 邀请链接和海报 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="link" class="w-4 h-4 mr-2 text-green-500"></i>邀请链接与海报</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="border border-gray-200 rounded-lg p-3 flex flex-col items-center cursor-pointer" @click="showToast('复制邀请链接')">
+                                <i data-lucide="link-2" class="w-8 h-8 text-blue-500 mb-2"></i>
+                                <span class="text-xs font-medium text-gray-700">邀请链接</span>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-3 flex flex-col items-center cursor-pointer" @click="showToast('生成/保存海报')">
+                                <i data-lucide="image" class="w-8 h-8 text-green-500 mb-2"></i>
+                                <span class="text-xs font-medium text-gray-700">邀请海报</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 增员素材 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="file-text" class="w-4 h-4 mr-2 text-purple-500"></i>增员素材</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs rounded-full cursor-pointer" @click="showToast('话术包')">话术包</span>
+                            <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs rounded-full cursor-pointer" @click="showToast('宣传图')">宣传图</span>
+                            <span class="px-3 py-1.5 bg-gray-100 text-gray-700 text-xs rounded-full cursor-pointer" @click="showToast('视频')">视频</span>
+                        </div>
+                    </div>
+                    <!-- 增员课程 -->
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center"><i data-lucide="graduation-cap" class="w-4 h-4 mr-2 text-amber-500"></i>增员课程</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center p-3 border border-gray-100 rounded-lg cursor-pointer" @click="goToPage('trainingDetail')">
+                                <div class="w-14 h-10 bg-gray-200 rounded mr-3 overflow-hidden"><img src="https://picsum.photos/id/30/140/100" class="w-full h-full object-cover"></div>
+                                <div class="flex-1"><div class="text-sm font-medium text-gray-800">增员实战技巧</div><div class="text-[10px] text-gray-500">1200人已学</div></div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center p-3 border border-gray-100 rounded-lg cursor-pointer" @click="goToPage('trainingDetail')">
+                                <div class="w-14 h-10 bg-gray-200 rounded mr-3 overflow-hidden"><img src="https://picsum.photos/id/31/140/100" class="w-full h-full object-cover"></div>
+                                <div class="flex-1"><div class="text-sm font-medium text-gray-800">团队招募与留存</div><div class="text-[10px] text-gray-500">800人已学</div></div>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 18. 续保管理 (Renewal Manage) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'renewalManage'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">续保管理</h1>
+                </div>
+                <!-- 分类标签：全部/短险/长险/团险 -->
+                <div class="bg-white px-2 pt-2 pb-1 flex space-x-2 overflow-x-auto hide-scrollbar border-b border-gray-100">
+                    <span v-for="c in renewalCategories" :key="c.id" :class="renewalCategory === c.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap" @click="renewalCategory = c.id">{{ c.name }}</span>
+                </div>
+                <!-- 状态标签：待处理/已处理/已失效 -->
+                <div class="bg-white px-4 py-2 flex space-x-2 border-b border-gray-100">
+                    <span v-for="s in renewalStatusList" :key="s.id" :class="renewalStatus === s.id ? 'border-blue-600 text-blue-600 bg-blue-50' : 'border-gray-200 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer border" @click="renewalStatus = s.id">{{ s.name }}</span>
+                </div>
+                <!-- 快速筛选：排序、隐藏条件、保单类型、续保类型（按分类显示） -->
+                <div class="bg-white px-4 py-2 space-y-2 border-b border-gray-100 text-xs">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <span class="text-gray-500">排序:</span>
+                        <select v-model="renewalSort" class="border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white">
+                            <option v-for="opt in renewalSortOptions" :key="opt" :value="opt">{{ opt }}</option>
+                        </select>
+                        <span class="text-gray-500 ml-2">隐藏:</span>
+                        <select v-model="renewalHideFilter" class="border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white">
+                            <option value="未隐藏">未隐藏</option>
+                            <option value="已隐藏">已隐藏</option>
+                            <option value="显示全部">显示全部</option>
+                        </select>
+                    </div>
+                    <div v-if="renewalCategory === 'short'" class="flex flex-wrap gap-2 items-center">
+                        <span class="text-gray-500">保单类型:</span>
+                        <select v-model="renewalPolicyType" class="border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white">
+                            <option value="全部保单">全部保单</option>
+                            <option value="家庭单">家庭单</option>
+                            <option value="个人单">个人单</option>
+                        </select>
+                        <span class="text-gray-500 ml-2">续保类型:</span>
+                        <select v-model="renewalType" class="border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white">
+                            <option value="全部">全部</option>
+                            <option value="原单原续">原单原续</option>
+                            <option value="转续保">转续保</option>
+                            <option value="转新单续">转新单续(惠民保)</option>
+                            <option value="不可续">不可续</option>
+                            <option value="方案待上线">方案待上线</option>
+                            <option value="短险月交">短险月交</option>
+                            <option value="线下续投">线下续投</option>
+                            <option value="保司官方续">保司官方续</option>
+                        </select>
+                    </div>
+                    <div v-if="renewalCategory === 'long'" class="flex flex-wrap gap-2 items-center">
+                        <span class="text-gray-500">续保类型:</span>
+                        <select v-model="renewalTypeLong" class="border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white">
+                            <option value="全部">全部</option>
+                            <option value="交费2次">交费2次</option>
+                            <option value="交费3次">交费3次</option>
+                            <option value="交费4次">交费4次</option>
+                            <option value="交费4次以上">交费4次以上</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-blue-600 cursor-pointer font-medium" @click="showRenewalAdvanced = !showRenewalAdvanced">
+                            <i data-lucide="filter" class="w-3 h-3 inline mr-1"></i> 高级筛选
+                        </span>
+                    </div>
+                    <div v-if="showRenewalAdvanced" class="bg-gray-50 rounded-lg p-3 space-y-2">
+                        <div class="flex items-center justify-between"><span class="text-gray-600">销售方式</span><select class="border rounded px-2 py-1 text-xs"><option>网销</option><option>经代</option></select></div>
+                        <div class="flex items-center justify-between"><span class="text-gray-600">交费方式</span><select class="border rounded px-2 py-1 text-xs"><option>年交</option><option>半年交</option><option>季交</option><option>月交</option></select></div>
+                        <div class="flex items-center justify-between"><span class="text-gray-600">应收时间</span><span class="text-xs text-blue-600">选择起止日期</span></div>
+                        <div class="flex items-center justify-between"><span class="text-gray-600">公司</span><span class="text-xs text-blue-600">展开全部</span></div>
+                    </div>
+                </div>
+                <!-- 续收规则入口 -->
+                <div class="bg-white px-4 py-2 border-b border-gray-100">
+                    <div class="text-blue-600 text-sm font-medium cursor-pointer flex items-center" @click="goToPage('renewalRules')">
+                        <i data-lucide="book-open" class="w-4 h-4 mr-2"></i> 续收规则
+                    </div>
+                </div>
+                <!-- 列表 / 空态 -->
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <template v-if="renewalList.length > 0">
+                        <div v-for="item in renewalList" :key="item.id" class="bg-white rounded-xl p-4 shadow-sm mb-3 border border-gray-100">
+                            <div class="flex justify-between items-start mb-2"><span class="font-bold text-gray-800 text-sm">{{ item.policyName }}</span><span class="text-[10px] text-gray-500">{{ item.statusText }}</span></div>
+                            <div class="text-xs text-gray-500">止期 {{ item.endDate }} · 保费 ¥{{ item.premium }}</div>
+                        </div>
+                    </template>
+                    <div v-else class="flex flex-col items-center justify-center py-16 text-gray-400">
+                        <i data-lucide="inbox" class="w-16 h-16 mb-3 opacity-30"></i>
+                        <p class="text-sm">{{ renewalEmptyText }}</p>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 续收规则页 (Renewal Rules) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'renewalRules'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">续收规则</h1>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="divide-y divide-gray-100">
+                            <div class="px-4 py-4 flex justify-between items-center cursor-pointer active:bg-gray-50" @click="showToast('续收常见问题')">
+                                <span class="text-sm font-medium text-gray-800">续收常见问题</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <div class="px-4 py-4 flex justify-between items-center cursor-pointer active:bg-gray-50" @click="showToast('短险连续投保规则')">
+                                <span class="text-sm font-medium text-gray-800">短险连续投保规则</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <div class="px-4 py-4 flex justify-between items-center cursor-pointer active:bg-gray-50" @click="showToast('长险续期规则')">
+                                <span class="text-sm font-medium text-gray-800">长险续期规则</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <div class="px-4 py-4 flex justify-between items-center cursor-pointer active:bg-gray-50" @click="showToast('团险续购规则')">
+                                <span class="text-sm font-medium text-gray-800">团险续购规则</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </transition>
@@ -1894,29 +2197,49 @@
                     { name: '电子名片', icon: 'contact-2', color: 'text-indigo-500' }
                 ];
 
+                const productTypeOrder = ['分红险', '终身寿', '医疗险', '重疾险', '意外险', '年金险', '团财险', '互联网产品'];
                 const products = ref([
-                    { 
-                        id: 1, name: '众安尊享e生2026版', insurer: '众安财险', price: '142', commission: '0.35+30元',
-                        tags: ['金标', '互联网', '核保支持', '在线理赔'], 
-                        shortDesc: '拓展康复责任，原除外责任有机会标体承保',
+                    { id: 1, name: '众安尊享e生2026版', insurer: '众安财险', price: '142', commission: '0.35+30元', type: '医疗险', incentive: '宣传奖励(含转保版)0.35',
+                        tags: ['金标', '互联网'], shortDesc: '拓展康复责任，原除外责任有机会标体承保',
                         desc: '1、出生满30天~70周岁可投保；2、拓展特定疾病康复住院费用医疗保险金；3、拓展183家指定民营医院...',
-                        features: ['出生满30天-70周岁可投保', '拓展特定疾病康复住院医疗金']
-                    },
-                    { 
-                        id: 2, name: '妈咪保贝哪吒守护少儿重疾险', insurer: '复星联合健康', price: '3200', commission: '最高0.43',
-                        tags: ['互联网', '奖励规则'], 
-                        shortDesc: '打破常规价最低，保障全面，理赔人性化',
+                        features: ['出生满30天-70周岁可投保', '拓展特定疾病康复住院医疗金'] },
+                    { id: 2, name: '妈咪保贝哪吒守护少儿重疾险', insurer: '复星联合健康', price: '3200', commission: '最高0.43', type: '重疾险', incentive: '宣传奖励最高0.43',
+                        tags: ['互联网', '奖励规则'], shortDesc: '打破常规价最低，保障全面，理赔人性化',
                         desc: '疾病覆盖广，责任丰富，保障全面。含少儿特疾、罕见病额外赔付。',
-                        features: ['少儿特疾最高赔付200%', '罕见病额外赔付']
-                    },
-                    { 
-                        id: 3, name: '中意一生中意(福享版) 终身寿险', insurer: '中意人寿', price: '2000', commission: '52.6% + 888元',
-                        tags: ['金标', '互联网', '核保支持', '奖励规则'], 
-                        shortDesc: '重疾定寿 保费需≥2000',
-                        desc: '交费灵活，现价增速快，长期持有收益可观，适合作为资产传承及养老储备方案。',
-                        features: ['终身复利递增', '可对接养老社区']
-                    }
+                        features: ['少儿特疾最高赔付200%', '罕见病额外赔付'] },
+                    { id: 3, name: '中意一生中意(福享版) 终身寿险', insurer: '中意人寿', price: '2000', commission: '52.6% + 888元', type: '终身寿', incentive: '佣金最高56%',
+                        tags: ['金标', '互联网'], shortDesc: '演示领先，预期可达4%',
+                        desc: '交费灵活，现价增速快，长期持有收益可观。',
+                        features: ['终身复利递增', '可对接养老社区'] },
+                    { id: 4, name: '复保星福家朱雀分红', insurer: '复星保德信', price: '5000', commission: '宣传奖励0.031', type: '分红险', incentive: '宣传奖励0.031',
+                        tags: ['3.15下架'], shortDesc: '演示领先，预期可达4%',
+                        features: ['分红演示', '长期稳健'] },
+                    { id: 5, name: '平安e生保·长期医疗', insurer: '平安健康', price: '288', commission: '0.35', type: '医疗险', incentive: '宣传奖励0.35',
+                        tags: ['金标'], shortDesc: '20年保证续保，家庭单更优',
+                        features: ['保证续保', '家庭单折扣'] },
+                    { id: 6, name: '小蜜蜂3号意外险', insurer: '众安财险', price: '158', commission: '最高0.25', type: '意外险', incentive: '宣传奖励最高0.25',
+                        tags: [], shortDesc: '高保额意外+猝死责任',
+                        features: ['意外身故', '猝死保障'] },
+                    { id: 7, name: '康乾8号年金险', insurer: '大家养老', price: '10000', commission: '佣金最高3%', type: '年金险', incentive: '佣金最高3%',
+                        tags: ['互联网'], shortDesc: '长期持有，养老补充',
+                        features: ['年金领取', '万能账户'] },
+                    { id: 8, name: '团意险方案A', insurer: '平安财险', price: '200', commission: '0.15', type: '团财险', incentive: '宣传奖励0.15',
+                        tags: [], shortDesc: '企业团险，员工福利',
+                        features: ['团体意外', '灵活方案'] },
+                    { id: 9, name: '蓝医保·互联网', insurer: '人保健康', price: '235', commission: '0.35', type: '互联网产品', incentive: '宣传奖励0.35',
+                        tags: ['金标', '互联网'], shortDesc: '互联网专属，核保宽松',
+                        features: ['线上投保', '智能核保'] }
                 ]);
+                const productGroups = computed(() => {
+                    const map = {};
+                    productTypeOrder.forEach(t => { map[t] = { type: t, list: [] }; });
+                    products.value.forEach(p => {
+                        const t = p.type || '互联网产品';
+                        if (!map[t]) map[t] = { type: t, list: [] };
+                        map[t].list.push(p);
+                    });
+                    return productTypeOrder.map(t => map[t]).filter(g => g && g.list.length > 0);
+                });
 
                 // ============= 导师 / 朋友圈 / 搜索 =============
                 const joinedTutorId = ref(null);
@@ -1957,6 +2280,35 @@
                 const companies = ref([
                     { initial: 'A', name: '爱心人寿保险股份有限公司', type: '寿险公司', solvency: '良好', yield: '3.04%', rating: 'BB' }
                 ]);
+
+                // 15. 荣誉体系
+                const honorWallTab = ref('month');
+
+                // 16. 增员专区：成功入职后显示邀请人数，-1 表示未入职不显示统计
+                const recruitInviteCount = ref(0);
+
+                // 18. 续保管理
+                const renewalCategories = [{ id: 'all', name: '全部' }, { id: 'short', name: '短险' }, { id: 'long', name: '长险' }, { id: 'group', name: '团险' }];
+                const renewalCategory = ref('all');
+                const renewalStatusList = [{ id: 'pending', name: '待处理' }, { id: 'done', name: '已处理' }, { id: 'expired', name: '已失效' }];
+                const renewalStatus = ref('pending');
+                const renewalSortOptions = computed(() => {
+                    if (renewalStatus.value === 'pending') return ['宽限期升序', '宽限期降序', '止期升序', '止期降序', '保费升序', '保费降序'];
+                    if (renewalStatus.value === 'done') return ['续收时间降序', '续收时间升序', '保费升序', '保费降序'];
+                    return ['止期降序', '止期升序', '保费升序', '保费降序'];
+                });
+                const renewalSort = ref('宽限期升序');
+                const renewalHideFilter = ref('未隐藏');
+                const renewalPolicyType = ref('全部保单');
+                const renewalType = ref('全部');
+                const renewalTypeLong = ref('全部');
+                const showRenewalAdvanced = ref(false);
+                const renewalList = ref([]);
+                const renewalEmptyText = computed(() => {
+                    if (renewalStatus.value === 'pending') return '暂无待处理订单';
+                    if (renewalStatus.value === 'done') return '暂无已处理订单';
+                    return '暂无已失效订单';
+                });
 
 
                 // ============= 入职保通流程全家桶 (Onboard Module) =============
@@ -2076,7 +2428,7 @@
                     else if(item.name === '公司介绍') goToPage('companyIntro');
                     else if(item.name === '计划书') currentTab.value = 'plan';
                     else if(item.name === '培训') goToPage('training');
-                    else if(item.name === '荣誉体系') showToast('进入荣誉体系/业绩排行');
+                    else if(item.name === '荣誉体系') goToPage('honorSystem');
                     else if(item.name === '增员专区') goToPage('recruit');
                     else showToast(`进入模块: ${item.name}`);
                 };
@@ -2104,13 +2456,17 @@
                     nextTick(() => { if(window.lucide) lucide.createIcons(); });
                 };
 
-                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep], refreshIcons);
+                watch([renewalStatus, renewalCategory], () => {
+                    const opts = renewalSortOptions.value;
+                    if (opts.length && !opts.includes(renewalSort.value)) renewalSort.value = opts[0];
+                });
+                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep, honorWallTab, renewalCategory, renewalStatus], refreshIcons);
 
                 onMounted(() => { refreshIcons(); });
 
                 return {
                     activePage, currentTab, isDarkStatus, goToPage, goBack,
-                    tabs, homeActions, profileTools, products,
+                    tabs, homeActions, profileTools, products, productGroups,
                     handleHomeAction, handleProfileTool,
                     toastMessage, showToast,
                     // 导师 / 朋友圈 / 搜索 & AI
@@ -2128,7 +2484,15 @@
                     currentProduct, isQuoteModalOpen, selectedProduct,
                     openQuoteModal, closeQuoteModal, handleGeneratePlan,
                     // Plan specific
-                    planConfig, myPlansList, companies
+                    planConfig, myPlansList, companies,
+                    // 15 荣誉体系
+                    honorWallTab,
+                    // 16 增员专区
+                    recruitInviteCount,
+                    // 18 续保管理
+                    renewalCategories, renewalCategory, renewalStatusList, renewalStatus,
+                    renewalSortOptions, renewalSort, renewalHideFilter, renewalPolicyType, renewalType, renewalTypeLong,
+                    showRenewalAdvanced, renewalList, renewalEmptyText
                 };
             }
         }).mount('#app');

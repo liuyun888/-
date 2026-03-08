@@ -114,7 +114,7 @@
                         </div>
                     </div>
 
-                    <!-- 金刚区 (功能导航) -->
+                    <!-- 金刚区 (功能导航) 入职前/入职后快捷入口变化 -->
                     <div class="bg-white mt-3 py-4 grid grid-cols-5 gap-y-4 px-2">
                         <div v-for="item in homeActions" :key="item.name" class="flex flex-col items-center cursor-pointer" @click="handleHomeAction(item)">
                             <div class="relative w-10 h-10 flex items-center justify-center mb-1">
@@ -128,8 +128,8 @@
                         </div>
                     </div>
 
-                    <!-- 入职保通卡片 -->
-                    <div class="mx-4 mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 shadow-sm border border-blue-100 relative overflow-hidden" @click="goToPage('onboard')">
+                    <!-- 入职保通卡片（仅入职前显示） -->
+                    <div v-if="!hasOnboarded" class="mx-4 mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 shadow-sm border border-blue-100 relative overflow-hidden" @click="goToPage('onboard')">
                         <div class="absolute top-0 left-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-br-lg">入职保通</div>
                         <div class="flex justify-between mt-3 mb-4">
                             <div class="text-center">
@@ -238,14 +238,15 @@
                     </div>
                 </div>
 
-                <!-- 2. 产品 (Products) -->
+                <!-- 2. 产品 (Products) 19.1 -->
                 <div v-show="currentTab === 'products'" class="min-h-full bg-white flex flex-col">
+                    <!-- 顶部：地区、搜索、AI快选 -->
                     <div class="px-4 pt-2 pb-2 bg-white sticky top-0 z-20">
                         <div class="flex items-center space-x-2">
-                            <div class="text-sm font-medium flex items-center">全国 <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i></div>
+                            <div class="text-sm font-medium flex items-center cursor-pointer" @click="showProductRegion = true">{{ productRegion }} <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i></div>
                             <div class="flex-1 bg-gray-100 rounded-full flex items-center px-3 py-1.5 cursor-pointer" @click="goToPage('search')">
                                 <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
-                                <span class="text-xs text-gray-400">康乾8号</span>
+                                <span class="text-xs text-gray-400">产品名称/关键词搜索</span>
                             </div>
                             <div class="flex flex-col items-center cursor-pointer" @click="goToPage('search')">
                                 <i data-lucide="bot" class="w-5 h-5 text-blue-500"></i>
@@ -254,60 +255,100 @@
                         </div>
                     </div>
 
-                    <!-- 警告提示 -->
-                    <div class="bg-orange-50 text-orange-600 text-xs px-4 py-2 flex items-center justify-between">
-                        <span>未加入保通用戶佣金不得提现及无法获得奖励...</span>
+                    <!-- 提示栏：引导加入保通 -->
+                    <div class="bg-orange-50 text-orange-600 text-xs px-4 py-2 flex items-center justify-between cursor-pointer" @click="!hasOnboarded && goToPage('onboard')">
+                        <span>未加入保通用户佣金不得提现及无法获得奖励，点击加入</span>
                         <i data-lucide="chevron-right" class="w-3 h-3"></i>
                     </div>
 
-                    <!-- 筛选栏 -->
+                    <!-- 筛选与排序栏 -->
                     <div class="flex justify-between items-center px-4 py-2 border-b border-gray-100 bg-white sticky top-12 z-10 text-sm font-medium text-gray-700">
-                        <div class="flex items-center">类型 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-gray-400"></i></div>
-                        <div class="flex items-center">推荐 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-gray-400"></i></div>
-                        <div class="text-yellow-600 flex items-center bg-yellow-50 px-2 py-0.5 rounded">
+                        <div class="flex items-center cursor-pointer" @click="showProductFilter = true">类型 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-gray-400"></i></div>
+                        <div class="flex items-center cursor-pointer" @click="showProductFilter = true">推荐 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-gray-400"></i></div>
+                        <div class="text-yellow-600 flex items-center bg-yellow-50 px-2 py-0.5 rounded cursor-pointer" @click="productFilterGold = !productFilterGold">
                             <i data-lucide="award" class="w-3 h-3 mr-1"></i>金标主推
                         </div>
-                        <div class="flex items-center">公司 <i data-lucide="filter" class="w-3 h-3 ml-1 text-gray-400"></i></div>
+                        <div class="flex items-center cursor-pointer" @click="showProductFilter = true">公司 <i data-lucide="filter" class="w-3 h-3 ml-1 text-gray-400"></i></div>
                     </div>
 
-                    <!-- 次级标签 -->
-                    <div class="flex overflow-x-auto hide-scrollbar px-4 py-3 space-x-2">
-                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">新上线</span>
-                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">个养税优</span>
-                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">热销产品</span>
-                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">父母优选</span>
-                    </div>
-
-                    <!-- 列表 -->
-                    <div class="px-4 pb-4 space-y-4">
-                        <div v-for="prod in products" :key="'list_'+prod.id" class="border-b border-gray-100 pb-4 flex cursor-pointer" @click="goToPage('productDetail', prod)">
-                            <div class="w-20 mr-3 text-center">
-                                <div class="relative w-full h-20 bg-blue-50 rounded-lg overflow-hidden mb-1 border border-gray-100">
-                                    <span v-if="prod.tags.includes('金标')" class="absolute top-0 left-0 bg-yellow-400 text-white text-[8px] px-1 font-bold z-10">金标</span>
-                                    <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id+10}`" class="w-full h-full object-cover">
+                    <!-- 产品列表卡片 -->
+                    <div class="flex-1 overflow-y-auto px-4 pb-4 space-y-4 hide-scrollbar">
+                        <div v-for="prod in filteredProductList" :key="'list_'+prod.id" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                            <div class="flex p-3 cursor-pointer" @click="goToPage('productDetail', prod)">
+                                <div class="w-20 mr-3 text-center flex-shrink-0">
+                                    <div class="relative w-full h-20 bg-blue-50 rounded-lg overflow-hidden mb-1 border border-gray-100">
+                                        <span v-if="(prod.tags||[]).includes('金标')" class="absolute top-0 left-0 bg-yellow-400 text-white text-[8px] px-1 font-bold z-10">金标</span>
+                                        <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id+10}`" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="text-[10px] text-gray-500 font-medium truncate">{{prod.insurer}}</div>
                                 </div>
-                                <div class="text-[10px] text-gray-500 font-medium truncate">{{prod.insurer}}</div>
-                                <button class="mt-1 text-[10px] text-orange-500 bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full w-full" @click.stop="showToast('查看宣传奖励说明')">宣传奖励</button>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">{{prod.name}}</h3>
-                                <div class="flex flex-wrap gap-1 mb-2">
-                                    <span v-for="tag in prod.tags.slice(0,3)" :key="tag" class="text-[10px] border border-blue-200 text-blue-500 px-1 rounded" @click.stop="showToast(`标签详情：${tag}`)">{{tag}}</span>
-                                </div>
-                                <ul class="text-[11px] text-gray-500 space-y-0.5 mb-2 list-inside list-disc pl-2">
-                                    <li>{{prod.features[0]}}</li>
-                                    <li>{{prod.features[1]}}</li>
-                                </ul>
-                                <div class="flex justify-between items-center mt-1">
-                                    <div class="text-red-500 font-bold text-sm">{{prod.price}} <span class="text-[10px] text-gray-500 font-normal">元起</span></div>
-                                    <div class="text-orange-500 text-xs flex items-center font-medium">
-                                        最高 {{prod.commission}} <i data-lucide="chevron-right" class="w-3 h-3 ml-0.5"></i>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">{{prod.name}}</h3>
+                                    <div class="flex flex-wrap gap-1 mb-1">
+                                        <span v-for="tag in (prod.tags||[]).slice(0,3)" :key="tag" class="text-[10px] border border-blue-200 text-blue-500 px-1 rounded">{{tag}}</span>
+                                    </div>
+                                    <ul class="text-[11px] text-gray-500 space-y-0.5 list-inside list-disc pl-2 line-clamp-3">
+                                        <li v-for="(f,i) in (prod.features||[]).slice(0,3)" :key="i">{{f}}</li>
+                                    </ul>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <div class="text-red-500 font-bold text-sm">{{prod.price}} <span class="text-[10px] text-gray-500 font-normal">元起</span></div>
+                                        <div class="text-orange-500 text-xs font-medium">宣传奖励 {{prod.commission}}</div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="px-3 pb-2 flex justify-end">
+                                <button class="text-[10px] text-blue-600 border border-blue-200 px-2 py-1 rounded" @click.stop="goToPage('productMaterials', prod)">产品资料</button>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- 产品筛选弹层 -->
+                <transition name="slide-up">
+                    <div v-if="showProductFilter" class="absolute inset-0 z-[60] flex flex-col bg-white">
+                        <div class="h-12 flex items-center justify-between px-4 border-b border-gray-100 shrink-0 mt-12">
+                            <span class="text-gray-500 cursor-pointer" @click="showProductFilter = false">取消</span>
+                            <h2 class="text-base font-bold text-gray-800">筛选</h2>
+                            <span class="text-blue-600 cursor-pointer font-medium" @click="applyProductFilter">确定</span>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 hide-scrollbar space-y-4">
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-500 mb-2">类型</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span v-for="t in productFilterTypes" :key="t" :class="productFilterType === t ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs cursor-pointer" @click="productFilterType = t">{{t}}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-500 mb-2">特别推荐</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span v-for="r in productFilterRecommends" :key="r" :class="productFilterRecommend === r ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs cursor-pointer" @click="productFilterRecommend = productFilterRecommend === r ? '' : r">{{r}}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-gray-500 mb-2">公司（最多选6个）</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <span v-for="c in productFilterCompanyList" :key="c" :class="productFilterCompany.includes(c) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs cursor-pointer" @click="toggleProductCompany(c)">{{c}}</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3 pt-4">
+                                <button class="flex-1 border border-gray-300 text-gray-600 py-2 rounded-full text-sm" @click="resetProductFilter">重置</button>
+                                <button class="flex-1 bg-blue-600 text-white py-2 rounded-full text-sm font-bold" @click="applyProductFilter">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
+
+                <!-- 地区选择浮层 -->
+                <transition name="fade">
+                    <div v-if="showProductRegion" class="absolute inset-0 z-[60] bg-black/40 flex items-start justify-center pt-24" @click.self="showProductRegion = false">
+                        <div class="bg-white rounded-xl shadow-xl w-full max-w-xs overflow-hidden">
+                            <div class="p-3 border-b border-gray-100 font-bold text-gray-800">选择地区</div>
+                            <div class="max-h-60 overflow-y-auto">
+                                <div v-for="r in productRegionList" :key="r" class="px-4 py-3 cursor-pointer active:bg-gray-50" :class="productRegion === r ? 'text-blue-600 font-medium' : 'text-gray-700'" @click="productRegion = r; showProductRegion = false">{{ r }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </transition>
 
                 <!-- 3. MPRC (CRM系统) -->
                 <div v-show="currentTab === 'mprc'" class="min-h-full bg-[#f4f6f9]">
@@ -1365,6 +1406,245 @@
             </div>
         </transition>
 
+        <!-- ==================== 团险活动介绍页 (Group Insurance) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'groupInsurance'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">团险</h1>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-5 text-white mb-4 shadow-lg">
+                        <h2 class="text-xl font-bold mb-2">团险专区</h2>
+                        <p class="text-sm opacity-90">企业团意险、团体医疗、团体年金，一站式方案与活动支持</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3">热门活动</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer" @click="showToast('团险活动详情')">
+                                <span class="text-sm font-medium text-gray-800">春季团险开门红</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer" @click="showToast('团险活动详情')">
+                                <span class="text-sm font-medium text-gray-800">企业福利方案定制</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3">团险产品</h3>
+                        <p class="text-xs text-gray-500 mb-3">团意险、团体医疗、团体年金等，支持方案报价与投保。</p>
+                        <div class="flex items-center p-3 border border-gray-100 rounded-lg cursor-pointer" @click="currentTab = 'products'; goBack(); showToast('可在此筛选团险产品')">
+                            <i data-lucide="shield" class="w-8 h-8 text-indigo-500 mr-3"></i>
+                            <div><div class="text-sm font-bold text-gray-800">去产品页筛选团险</div><div class="text-[10px] text-gray-500">类型选「团险」</div></div>
+                            <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400 ml-auto"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 活动中心 (Activity Center) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'activityCenter'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">活动中心</h1>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <div class="bg-white rounded-xl shadow-sm p-4 mb-3 cursor-pointer" @click="goToPage('activityReward')">
+                        <div class="flex items-center"><div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mr-3"><i data-lucide="gift" class="w-6 h-6 text-red-500"></i></div><div><div class="font-bold text-gray-800">新人三重礼</div><div class="text-xs text-gray-500">7天抽万元+首单补贴</div></div></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 cursor-pointer" @click="showToast('更多活动敬请期待')">
+                        <div class="flex items-center"><div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-3"><i data-lucide="megaphone" class="w-6 h-6 text-blue-500"></i></div><div><div class="font-bold text-gray-800">平台营销活动</div><div class="text-xs text-gray-500">不定期更新</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 19.2 产品详情页 (Product Detail) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'productDetail' && currentProduct" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="bg-gradient-to-b from-blue-900/90 to-transparent pt-12 pb-2 px-4 flex items-center justify-between sticky top-0 z-20">
+                    <span class="cursor-pointer p-2 -ml-2 text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6"></i></span>
+                    <div class="flex items-center space-x-4 text-white">
+                        <i data-lucide="share-2" class="w-5 h-5 cursor-pointer" @click="showToast('分享')"></i>
+                        <i data-lucide="headset" class="w-5 h-5 cursor-pointer" @click="goToPage('customerService')"></i>
+                        <i data-lucide="more-vertical" class="w-5 h-5 cursor-pointer" @click="showToast('资料/核保')"></i>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto pb-24 hide-scrollbar">
+                    <!-- 头部宣传图 -->
+                    <div class="h-40 bg-gradient-to-r from-blue-600 to-indigo-600 -mt-14 mx-4 rounded-2xl flex items-center justify-center text-white/80">
+                        <i data-lucide="shield" class="w-20 h-20"></i>
+                    </div>
+                    <!-- 产品名称与简介 -->
+                    <div class="mx-4 -mt-6 bg-white rounded-2xl shadow-lg p-4 relative z-10">
+                        <span v-if="(currentProduct.tags||[]).includes('金标')" class="bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[10px] px-2 py-0.5 rounded mr-2">金标</span>
+                        <h1 class="text-lg font-bold text-gray-800 mt-2">{{ currentProduct.name }}</h1>
+                        <p class="text-sm text-gray-500 mt-1">{{ currentProduct.desc || currentProduct.shortDesc }}</p>
+                    </div>
+                    <!-- 保障详情区 -->
+                    <div class="mx-4 mt-3 bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="text-sm font-bold text-gray-800">保障详情</h3>
+                            <span class="text-xs text-blue-600 cursor-pointer" @click="showToast('展开完整保障责任与条款')">查看详情</span>
+                        </div>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li v-for="(f,i) in (currentProduct.features||[]).slice(0,3)" :key="i">· {{ f }}</li>
+                        </ul>
+                    </div>
+                    <!-- 产品介绍 -->
+                    <div class="mx-4 mt-3 bg-white rounded-xl p-4 shadow-sm">
+                        <h3 class="text-sm font-bold text-gray-800 mb-2">产品介绍</h3>
+                        <div class="text-xs text-gray-500 space-y-1">
+                            <div>投保年龄：出生满30天-70周岁</div>
+                            <div>犹豫期：15天</div>
+                            <div>等待期：30天</div>
+                        </div>
+                    </div>
+                    <!-- 附赠服务、产品特色、产品资料、快速理赔、常见问题 -->
+                    <div class="mx-4 mt-3 bg-white rounded-xl p-4 shadow-sm">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-50 cursor-pointer" @click="showToast('附赠服务详情')"><span class="text-sm text-gray-800">附赠服务</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-50 cursor-pointer" @click="showToast('产品特色')"><span class="text-sm text-gray-800">产品特色</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-50 cursor-pointer" @click="goToPage('productMaterials', currentProduct)"><span class="text-sm text-gray-800">产品资料</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-50 cursor-pointer" @click="showToast('快速理赔介绍')"><span class="text-sm text-gray-800">快速理赔</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>
+                        <div class="flex justify-between items-center py-2 cursor-pointer" @click="showToast('常见问题')"><span class="text-sm text-gray-800">常见问题</span><i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i></div>
+                    </div>
+                    <!-- 声明 -->
+                    <div class="mx-4 mt-3 mb-4 text-center text-[10px] text-gray-400">
+                        <p>本产品由<span class="text-blue-600">XX在线财产保险股份有限公司</span>承保。由<span class="text-blue-600 cursor-pointer" @click="showToast('公司详情')">保通保险代理有限公司</span>面向全国（除港澳台地区）销售。对我司暂未开设分支机构的地区客户，可能存在服务环节增加、时效相对较长等服务不到位问题。</p>
+                    </div>
+                </div>
+                <!-- 底部操作区 -->
+                <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-3 flex items-center gap-2">
+                    <span class="text-xs text-gray-500 cursor-pointer" @click="goToPage('productMaterials', currentProduct)">资料</span>
+                    <span class="text-xs text-gray-500 cursor-pointer" @click="showToast('健康告知')">健告</span>
+                    <div class="flex-1 text-right">
+                        <span class="text-red-500 font-bold">{{ currentProduct.price }}</span><span class="text-[10px] text-gray-500">元起</span>
+                    </div>
+                    <button class="bg-gray-100 text-gray-700 font-bold py-2 px-4 rounded-full text-sm" @click="goToPlanFromProduct">计划书</button>
+                    <button class="bg-blue-600 text-white font-bold py-2 px-5 rounded-full text-sm" @click="goToApplyFromProduct">投保</button>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 产品资料页 (Product Materials) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'productMaterials' && currentProduct" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">产品资料</h1>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-4">
+                        <div class="h-32 bg-gradient-to-r from-blue-100 to-indigo-100 flex items-center justify-center"><i data-lucide="image" class="w-16 h-16 text-blue-300"></i></div>
+                        <div class="p-3 font-bold text-gray-800">{{ currentProduct.name }}</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="divide-y divide-gray-100">
+                            <div v-for="item in productMaterialEntries" :key="item" class="px-4 py-4 flex justify-between items-center cursor-pointer active:bg-gray-50" @click="showToast(item + ' - 文档详情')">
+                                <span class="text-sm font-medium text-gray-800">{{ item }}</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 19.3 投保流程 (Apply/Underwriting) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'apply'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="applyStep > 0 ? applyStep-- : goBack()"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">投保</h1>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 hide-scrollbar">
+                    <!-- 未获得资质 -->
+                    <div v-if="!hasOnboarded" class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                        <p class="text-sm text-amber-800 mb-4">您尚未获得销售资质，无法发起投保</p>
+                        <button class="bg-blue-600 text-white font-bold py-2 px-6 rounded-full text-sm" @click="goToPage('onboard')">加入保通</button>
+                    </div>
+                    <!-- 已申请审核中 -->
+                    <div v-else-if="!onboardApproved" class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                        <p class="text-sm text-blue-800 mb-4">您的入职申请审核中，通过后可发起投保</p>
+                        <button class="bg-gray-200 text-gray-600 py-2 px-6 rounded-full text-sm mb-2" disabled>审核中</button>
+                        <p class="text-[10px] text-gray-500 mt-2 cursor-pointer" @click="onboardApproved = true">（原型：模拟审核通过）</p>
+                    </div>
+                    <!-- 已资质：多步投保 -->
+                    <template v-else>
+                        <div v-if="applyStep === 0" class="space-y-4">
+                            <div class="bg-white rounded-xl p-4 shadow-sm">
+                                <h3 class="text-sm font-bold text-gray-800 mb-3">被保人</h3>
+                                <div class="flex space-x-4">
+                                    <div><label class="text-xs text-gray-500">出生日期</label><input type="text" placeholder="选择日期" class="w-full border rounded px-3 py-2 text-sm mt-1"></div>
+                                    <div><label class="text-xs text-gray-500">性别</label><select class="w-full border rounded px-3 py-2 text-sm mt-1"><option>男</option><option>女</option></select></div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-xl p-4 shadow-sm">
+                                <h3 class="text-sm font-bold text-gray-800 mb-3">保障方案</h3>
+                                <p class="text-xs text-gray-500">保障期/缴费方式等（各产品不同）</p>
+                                <div class="mt-2 text-sm">保额 50万 · 保费 ¥{{ currentProduct && currentProduct.price }} 起</div>
+                            </div>
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full" @click="applyStep = 1">下一步</button>
+                        </div>
+                        <div v-if="applyStep === 1">
+                            <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+                                <h3 class="text-sm font-bold text-gray-800 mb-2">客户告知书</h3>
+                                <p class="text-xs text-gray-500">请阅读并同意...</p>
+                            </div>
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full" @click="applyStep = 2">我已确认并同意以上内容</button>
+                        </div>
+                        <div v-if="applyStep === 2">
+                            <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+                                <h3 class="text-sm font-bold text-gray-800 mb-2">健康告知</h3>
+                                <p class="text-xs text-gray-500">是否存在以下疾病...</p>
+                                <div class="flex space-x-2 mt-3">
+                                    <button class="flex-1 border border-red-300 text-red-600 py-2 rounded-full text-sm" @click="showToast('部分为是-无法进入下一步')">部分为是</button>
+                                    <button class="flex-1 bg-blue-600 text-white py-2 rounded-full text-sm" @click="applyStep = 3">以上全否</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="applyStep === 3" class="space-y-4">
+                            <div class="bg-white rounded-xl p-4 shadow-sm">
+                                <h3 class="text-sm font-bold text-gray-800 mb-3">投保人信息</h3>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between"><span class="text-gray-500">姓名</span><input type="text" placeholder="可导入" class="border rounded px-2 py-1 w-32 text-right"></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">证件类型/有效期</span><span class="text-blue-600 text-xs">选择</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">职业/年收入/手机/邮箱</span><span class="text-blue-600 text-xs">填写</span></div>
+                                    <div class="flex justify-between"><span class="text-gray-500">为谁投保</span><span class="text-blue-600 text-xs">本人/配偶/子女/父母</span></div>
+                                </div>
+                            </div>
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full" @click="applyStep = 4">下一步</button>
+                        </div>
+                        <div v-if="applyStep === 4">
+                            <div class="bg-white rounded-xl p-4 shadow-sm mb-4"><h3 class="text-sm font-bold text-gray-800 mb-2">配置保障计划</h3><p class="text-xs text-gray-500">显示金额</p></div>
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full" @click="applyStep = 5">投保</button>
+                        </div>
+                        <div v-if="applyStep === 5">
+                            <div class="bg-white rounded-xl p-4 shadow-sm mb-4"><h3 class="text-sm font-bold text-gray-800 mb-2">风险评估</h3><p class="text-xs text-gray-500">做题进行投保人风险评估</p></div>
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full" @click="applyStep = 6">提交评估</button>
+                        </div>
+                        <div v-if="applyStep === 6">
+                            <div class="bg-green-50 border border-green-200 rounded-xl p-4 text-center mb-4"><p class="text-sm text-green-800">风险评估符合，通过</p></div>
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full" @click="applyStep = 7">人脸识别，下一步</button>
+                        </div>
+                        <div v-if="applyStep === 7">
+                            <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
+                                <h3 class="text-sm font-bold text-gray-800 mb-2">订单确认</h3>
+                                <p class="text-xs text-gray-500">产品、保障方案、投保人/被保人、保额、保费。可编辑、可分享给投保人。</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="flex-1 border border-blue-600 text-blue-600 py-2 rounded-full text-sm" @click="showToast('分享给投保人')">分享</button>
+                                <button class="flex-1 bg-blue-600 text-white py-2 rounded-full text-sm font-bold" @click="showToast('订单已生成，在 我的-订单-待处理'); goBack()">确认</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </transition>
+
         <!-- ==================== 独立页面层：入职保通 (Onboarding - 完整五步走) ==================== -->
         <transition name="slide-in-right">
             <div v-if="activePage === 'onboard'" class="absolute inset-0 z-50 bg-white flex flex-col">
@@ -1893,74 +2173,222 @@
             </div>
         </transition>
 
-        <!-- ==================== 培训中心 (Training - 独立页) ==================== -->
+        <!-- ==================== 培训中心 (首页-培训，按截图重做：带底部 Tab) ==================== -->
         <transition name="slide-in-right">
             <div v-if="activePage === 'training'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
-                <div class="bg-blue-600 pt-14 pb-2 px-4 sticky top-0 z-20">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="cursor-pointer p-2 -ml-2 text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6"></i></span>
-                        <h1 class="text-xl font-bold text-white tracking-widest italic">星空培训</h1>
-                        <span class="cursor-pointer p-2 -mr-2 text-white" @click="goToPage('trainingMy')"><i data-lucide="user" class="w-5 h-5"></i></span>
-                    </div>
-                    <div class="bg-white/20 rounded-full flex items-center px-3 py-1.5 w-full cursor-pointer border border-white/30" @click="goToPage('search')">
-                        <i data-lucide="search" class="w-4 h-4 text-white mr-2"></i>
-                        <span class="text-sm text-white/80">搜索课程或讲师...</span>
+                <!-- 顶部：返回、标题、搜索(首页/讲师中心显示) -->
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">{{ trainingTab === 'home' ? '首页' : trainingTab === 'courses' ? '课程中心' : trainingTab === 'lecturer' ? '讲师中心' : '我的' }}</h1>
+                    <span v-if="trainingTab === 'home' || trainingTab === 'lecturer'" class="cursor-pointer p-2 -mr-2 text-gray-600" @click="goToPage('search')"><i data-lucide="search" class="w-5 h-5"></i></span>
+                    <span v-else class="w-9"></span>
+                </div>
+                <!-- 首页：搜索栏 -->
+                <div v-if="trainingTab === 'home'" class="bg-white px-4 py-2 border-b border-gray-100">
+                    <div class="bg-gray-100 rounded-full flex items-center px-3 py-2 cursor-pointer" @click="goToPage('search')">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                        <span class="text-sm text-gray-400">搜索</span>
                     </div>
                 </div>
-                <div class="flex-1 overflow-y-auto pb-8">
-                    <div class="px-4 py-3 bg-white">
-                        <div class="rounded-xl overflow-hidden shadow-sm h-32 relative flex items-center p-4 bg-gradient-to-r from-teal-400 to-emerald-500 text-white cursor-pointer" @click="showToast('培训活动轮播')">
-                            <div class="z-10">
-                                <h2 class="text-xl font-bold mb-1">MDRT顶尖销售课</h2>
-                                <p class="text-xs bg-white/20 px-2 py-0.5 rounded inline-block">限时免费学习中</p>
-                            </div>
-                            <i data-lucide="graduation-cap" class="absolute right-4 w-20 h-20 opacity-20"></i>
-                        </div>
-                    </div>
-                    <div class="bg-white px-4 pb-5 flex justify-between">
-                        <div class="flex flex-col items-center cursor-pointer" @click="customizationStep = 0; goToPage('trainingSmartCustomization')">
-                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="sparkles" class="w-6 h-6 text-blue-500"></i></div>
-                            <span class="text-xs text-gray-700">智能定制</span>
-                        </div>
-                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('trainingBootcamp')">
-                            <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="target" class="w-6 h-6 text-orange-500"></i></div>
-                            <span class="text-xs text-gray-700">训练营</span>
-                        </div>
-                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('trainingCertification')">
-                            <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="medal" class="w-6 h-6 text-purple-500"></i></div>
-                            <span class="text-xs text-gray-700">认证中心</span>
-                        </div>
-                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('trainingLecturer')">
-                            <div class="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="mic-2" class="w-6 h-6 text-rose-500"></i></div>
-                            <span class="text-xs text-gray-700">大咖说</span>
-                        </div>
-                    </div>
-                    <div class="mt-2 bg-white p-4">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-bold text-gray-800 text-sm border-l-4 border-blue-600 pl-2">推荐课程</h3>
-                            <span class="text-xs text-gray-400 flex items-center cursor-pointer" @click="goToPage('trainingCourses')">更多 <i data-lucide="chevron-right" class="w-3 h-3"></i></span>
-                        </div>
-                        <div class="space-y-3">
-                            <div v-for="i in 3" :key="i" class="flex border-b border-gray-50 pb-3 cursor-pointer" @click="goToPage('trainingDetail')">
-                                <div class="w-24 h-16 bg-gray-100 rounded mr-3 relative overflow-hidden">
-                                    <img :src="`https://picsum.photos/id/${10+i}/200/150`" class="w-full h-full object-cover">
-                                    <div class="absolute bottom-0 right-0 bg-black/60 text-white text-[8px] px-1">15:00</div>
+
+                <div class="flex-1 overflow-y-auto hide-scrollbar flex flex-col" style="padding-bottom: 60px;">
+                    <!-- Tab 首页 -->
+                    <template v-if="trainingTab === 'home'">
+                        <div class="px-4 py-3">
+                            <div class="rounded-xl overflow-hidden shadow-md bg-gradient-to-r from-blue-500 to-blue-600 p-4 flex items-center justify-between text-white cursor-pointer" @click="goToPage('trainingDetail')">
+                                <div class="flex-1 pr-4">
+                                    <h2 class="text-lg font-bold mb-1">i云保出单速通攻略</h2>
+                                    <p class="text-xs text-blue-100 leading-relaxed">新人需要掌握的内容千头万绪 关于出单流程和产品活动,看这门课就够了。</p>
+                                    <button class="mt-2 flex items-center text-sm font-medium bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full"><i data-lucide="play" class="w-3 h-3 mr-1"></i>立即查看</button>
                                 </div>
-                                <div class="flex-1 flex flex-col justify-between">
-                                    <div class="font-bold text-sm text-gray-800 leading-tight">开门红业绩翻倍秘籍：高净值客户拓客指南</div>
-                                    <div class="flex justify-between items-center text-xs">
-                                        <span class="text-gray-400">1200人已学</span>
-                                        <span class="text-blue-500 bg-blue-50 px-2 py-0.5 rounded text-[10px]">销售技巧</span>
+                                <div class="w-20 h-20 flex-shrink-0 flex items-center justify-center bg-white/10 rounded-lg">
+                                    <i data-lucide="book-open" class="w-10 h-10 opacity-90"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 grid grid-cols-2 gap-3">
+                            <div class="bg-white rounded-xl shadow-sm p-4 flex items-start cursor-pointer border border-gray-100" @click="goToPage('trainingSmartCustomization')">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-bold text-gray-800">智能定制</h3>
+                                    <p class="text-[10px] text-gray-500 mt-0.5">专属课程私人定制</p>
+                                </div>
+                                <i data-lucide="sliders" class="w-8 h-8 text-blue-500 flex-shrink-0 ml-2"></i>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm p-4 flex items-start cursor-pointer border border-gray-100" @click="goToPage('trainingBootcamp')">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-bold text-gray-800">训练营</h3>
+                                    <p class="text-[10px] text-gray-500 mt-0.5">精品课程体系推荐</p>
+                                </div>
+                                <i data-lucide="trophy" class="w-8 h-8 text-orange-500 flex-shrink-0 ml-2"></i>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm p-4 flex items-start cursor-pointer border border-gray-100" @click="goToPage('trainingCertification')">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-bold text-gray-800">认证中心</h3>
+                                    <p class="text-[10px] text-gray-500 mt-0.5">高端资质专业认证</p>
+                                </div>
+                                <i data-lucide="award" class="w-8 h-8 text-orange-500 flex-shrink-0 ml-2"></i>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm p-4 flex items-start cursor-pointer border border-gray-100" @click="trainingTab = 'lecturer'">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-sm font-bold text-gray-800">大咖说</h3>
+                                    <p class="text-[10px] text-gray-500 mt-0.5">大咖直播干货满满</p>
+                                </div>
+                                <i data-lucide="message-circle" class="w-8 h-8 text-blue-500 flex-shrink-0 ml-2"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white mt-3 px-4 py-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-gray-800 text-sm">推荐课程</h3>
+                                <span class="text-xs text-gray-500 cursor-pointer" @click="trainingTab = 'courses'">更多 <i data-lucide="chevron-right" class="w-3 h-3 inline"></i></span>
+                            </div>
+                            <div class="space-y-3">
+                                <div v-for="c in trainingHomeCourses" :key="c.id" class="flex items-center pb-3 border-b border-gray-50 cursor-pointer" @click="goToPage('trainingDetail')">
+                                    <div class="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 relative flex-shrink-0 mr-3">
+                                        <img :src="c.cover" class="w-full h-full object-cover">
+                                        <span class="absolute top-0 left-0 bg-gray-700/80 text-white text-[8px] px-1">{{ c.label }}</span>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-bold text-sm text-gray-800 leading-tight">{{ c.title }}</div>
+                                        <div class="flex flex-wrap gap-1 mt-1" v-if="c.tags && c.tags.length">
+                                            <span v-for="t in c.tags" :key="t" class="text-[10px] bg-orange-100 text-orange-600 px-1 rounded">{{ t }}</span>
+                                        </div>
+                                        <div class="text-[10px] text-gray-400 mt-1">{{ c.lessons }}课时 · {{ c.learned }}人已学</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </template>
+
+                    <!-- Tab 课程中心：左侧分类 + 右侧内容 -->
+                    <template v-if="trainingTab === 'courses'">
+                        <div class="flex flex-1 bg-white min-h-0">
+                            <div class="w-20 flex-shrink-0 border-r border-gray-100 overflow-y-auto hide-scrollbar py-2 bg-gray-50/50">
+                                <div v-for="cat in trainingCategories" :key="cat" :class="trainingCategory === cat ? 'text-blue-600 bg-blue-50 border-l-2 border-blue-600 font-medium' : 'text-gray-600'" class="py-2.5 px-2 text-xs text-center cursor-pointer" @click="trainingCategory = cat">{{ cat }}</div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto hide-scrollbar p-4">
+                                <div class="rounded-xl overflow-hidden shadow-sm bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white mb-4 cursor-pointer" @click="goToPage('trainingDetail')">
+                                    <h3 class="font-bold mb-0.5">开门红专区</h3>
+                                    <p class="text-xs text-white/90">主推产品介绍课程 & 营销锦囊课程</p>
+                                    <button class="mt-2 text-xs font-medium bg-white/20 px-3 py-1 rounded">立即查看</button>
+                                </div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-xs text-gray-500">共27个课程</span>
+                                    <div class="flex space-x-2">
+                                        <span :class="trainingCourseSort === 'recommend' ? 'text-blue-600 font-medium' : 'text-gray-500'" class="text-xs cursor-pointer" @click="trainingCourseSort = 'recommend'">推荐</span>
+                                        <span :class="trainingCourseSort === 'hot' ? 'text-blue-600 font-medium' : 'text-gray-500'" class="text-xs cursor-pointer" @click="trainingCourseSort = 'hot'">人气</span>
+                                        <span :class="trainingCourseSort === 'time' ? 'text-blue-600 font-medium' : 'text-gray-500'" class="text-xs cursor-pointer" @click="trainingCourseSort = 'time'">时间</span>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div v-for="c in trainingCourseList" :key="c.id" class="flex items-center pb-3 border-b border-gray-100 cursor-pointer" @click="goToPage('trainingDetail')">
+                                        <div class="w-20 h-14 rounded-lg overflow-hidden bg-gray-100 relative flex-shrink-0 mr-3">
+                                            <img :src="c.cover" class="w-full h-full object-cover">
+                                            <span class="absolute top-0 left-0 bg-gray-700/80 text-white text-[8px] px-1">{{ c.label }}</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="font-bold text-sm text-gray-800 leading-tight">{{ c.title }}</div>
+                                            <div class="flex flex-wrap gap-1 mt-1" v-if="c.tags && c.tags.length">
+                                                <span v-for="t in c.tags" :key="t" class="text-[10px] bg-orange-100 text-orange-600 px-1 rounded">{{ t }}</span>
+                                            </div>
+                                            <div class="text-[10px] text-gray-400 mt-1">{{ c.lessons }}课时 {{ c.learned }}人已学</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Tab 讲师中心 -->
+                    <template v-if="trainingTab === 'lecturer'">
+                        <div class="bg-white px-4 py-2 flex items-center justify-between border-b border-gray-100 text-xs">
+                            <span class="flex items-center text-gray-600 cursor-pointer">擅长领域 <i data-lucide="chevron-down" class="w-3 h-3 ml-1"></i></span>
+                            <span class="flex items-center text-gray-600 cursor-pointer">综合排序 <i data-lucide="chevron-down" class="w-3 h-3 ml-1"></i></span>
+                            <span :class="trainingMyFollow ? 'text-blue-600 font-medium' : 'text-gray-500'" class="cursor-pointer" @click="trainingMyFollow = !trainingMyFollow">我的关注</span>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                            <div v-for="l in trainingLecturerList" :key="l.id" class="bg-white rounded-xl shadow-sm p-4 flex items-center">
+                                <img :src="l.avatar" class="w-12 h-12 rounded-full object-cover flex-shrink-0 mr-3 border border-gray-100">
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-bold text-gray-800">{{ l.name }}</h3>
+                                    <div class="text-[10px] text-gray-500 mt-0.5">{{ l.popularity }}人气值 | {{ l.follow }}关注 | {{ l.lessons }}节课</div>
+                                    <div class="text-[10px] text-gray-500 mt-1">擅长领域 <span v-if="l.skills && l.skills.length" class="text-blue-600"><span v-for="s in l.skills" :key="s" class="bg-blue-50 px-1 rounded mr-0.5">{{ s }}</span></span><span v-else class="text-gray-400">暂无</span></div>
+                                </div>
+                                <button class="text-xs text-blue-600 border border-blue-600 px-3 py-1.5 rounded-full flex-shrink-0" @click.stop="showToast('已关注')">+关注</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Tab 我的 -->
+                    <template v-if="trainingTab === 'my'">
+                        <div class="bg-white px-4 py-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-gray-800 text-sm">本月学习</h3>
+                                <button class="bg-blue-50 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full" @click="showToast('打卡成功！')">学习打卡</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="border border-gray-100 rounded-xl p-4 text-center cursor-pointer" @click="showToast('打卡天数榜单')">
+                                    <div class="text-2xl font-black text-gray-800">0 <span class="text-xs font-normal text-gray-500">天</span></div>
+                                    <span class="text-[10px] bg-red-100 text-red-600 px-1 rounded mt-1 inline-block">榜单</span>
+                                    <div class="text-[10px] text-gray-500 mt-1">打卡天数 &gt;</div>
+                                </div>
+                                <div class="border border-gray-100 rounded-xl p-4 text-center cursor-pointer" @click="showToast('学习时长榜单')">
+                                    <div class="text-2xl font-black text-gray-800">0 <span class="text-xs font-normal text-gray-500">分</span></div>
+                                    <span class="text-[10px] bg-red-100 text-red-600 px-1 rounded mt-1 inline-block">榜单</span>
+                                    <div class="text-[10px] text-gray-500 mt-1">学习时长 &gt;</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white px-4 py-4 flex justify-around border-t border-gray-50">
+                            <div class="flex flex-col items-center cursor-pointer" @click="showToast('班级')"><i data-lucide="layout-grid" class="w-6 h-6 text-gray-600 mb-1"></i><span class="text-[10px] text-gray-600">班级</span></div>
+                            <div class="flex flex-col items-center cursor-pointer" @click="showToast('考试')"><i data-lucide="file-edit" class="w-6 h-6 text-gray-600 mb-1"></i><span class="text-[10px] text-gray-600">考试</span></div>
+                            <div class="flex flex-col items-center cursor-pointer" @click="showToast('证书')"><i data-lucide="award" class="w-6 h-6 text-gray-600 mb-1"></i><span class="text-[10px] text-gray-600">证书</span></div>
+                            <div class="flex flex-col items-center cursor-pointer" @click="showToast('收藏')"><i data-lucide="star" class="w-6 h-6 text-gray-600 mb-1"></i><span class="text-[10px] text-gray-600">收藏</span></div>
+                        </div>
+                        <div class="bg-white mt-2 px-4 py-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-bold text-gray-800 text-sm">我的课程</h3>
+                                <span class="cursor-pointer text-gray-500" @click="showToast('搜索课程')"><i data-lucide="search" class="w-4 h-4"></i></span>
+                            </div>
+                            <div class="flex space-x-2 mb-4">
+                                <span :class="trainingMyCourseTab === 'learning' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs cursor-pointer" @click="trainingMyCourseTab = 'learning'">学习中</span>
+                                <span :class="trainingMyCourseTab === 'done' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'" class="px-3 py-1.5 rounded-full text-xs cursor-pointer" @click="trainingMyCourseTab = 'done'">已学完</span>
+                            </div>
+                            <div v-if="trainingMyCourseTab === 'learning'" class="flex flex-col items-center justify-center py-12 text-gray-400">
+                                <i data-lucide="package-open" class="w-16 h-16 mb-3 opacity-40"></i>
+                                <p class="text-sm text-gray-500 mb-4">暂无学习中的课程</p>
+                                <button class="bg-blue-600 text-white text-sm font-bold px-6 py-2 rounded-full" @click="trainingTab = 'courses'">去添加课程</button>
+                            </div>
+                            <div v-else class="flex flex-col items-center justify-center py-12 text-gray-400">
+                                <i data-lucide="check-circle" class="w-16 h-16 mb-3 opacity-40"></i>
+                                <p class="text-sm text-gray-500">暂无已学完课程</p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- 培训底部 Tab 栏 -->
+                <div class="absolute bottom-0 left-0 right-0 h-14 bg-white border-t border-gray-100 flex justify-around items-center z-10">
+                    <div class="flex flex-col items-center cursor-pointer" :class="trainingTab === 'home' ? 'text-blue-600' : 'text-gray-500'" @click="trainingTab = 'home'">
+                        <i data-lucide="play-circle" class="w-5 h-5 mb-0.5" :fill="trainingTab === 'home' ? 'currentColor' : 'none'"></i>
+                        <span class="text-[10px]">首页</span>
+                    </div>
+                    <div class="flex flex-col items-center cursor-pointer" :class="trainingTab === 'courses' ? 'text-blue-600' : 'text-gray-500'" @click="trainingTab = 'courses'">
+                        <i data-lucide="book-open" class="w-5 h-5 mb-0.5" :fill="trainingTab === 'courses' ? 'currentColor' : 'none'"></i>
+                        <span class="text-[10px]">课程中心</span>
+                    </div>
+                    <div class="flex flex-col items-center cursor-pointer" :class="trainingTab === 'lecturer' ? 'text-blue-600' : 'text-gray-500'" @click="trainingTab = 'lecturer'">
+                        <i data-lucide="graduation-cap" class="w-5 h-5 mb-0.5" :fill="trainingTab === 'lecturer' ? 'currentColor' : 'none'"></i>
+                        <span class="text-[10px]">讲师中心</span>
+                    </div>
+                    <div class="flex flex-col items-center cursor-pointer" :class="trainingTab === 'my' ? 'text-blue-600' : 'text-gray-500'" @click="trainingTab = 'my'">
+                        <i data-lucide="user" class="w-5 h-5 mb-0.5" :fill="trainingTab === 'my' ? 'currentColor' : 'none'"></i>
+                        <span class="text-[10px]">我的</span>
                     </div>
                 </div>
             </div>
         </transition>
 
-        <!-- 培训-智能定制 / 训练营 / 认证中心 / 课程中心 / 课程详情 / 讲师 / 我的学习 (占位，点击后 Toast 或简单页) -->
+        <!-- 培训子页：智能定制 / 训练营 / 认证中心（从首页快捷入口进入） -->
         <transition name="slide-in-right">
             <div v-if="activePage === 'trainingSmartCustomization'" class="absolute inset-0 z-50 bg-white flex flex-col">
                 <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">智能定制</h1></div>
@@ -1997,17 +2425,6 @@
             </div>
         </transition>
         <transition name="slide-in-right">
-            <div v-if="activePage === 'trainingCourses'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
-                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">课程中心</h1></div>
-                <div class="flex-1 overflow-y-auto p-4 space-y-4">
-                    <div v-for="i in 4" :key="i" class="flex border-b border-gray-50 pb-3 cursor-pointer" @click="goToPage('trainingDetail')">
-                        <div class="w-24 h-16 bg-gray-100 rounded mr-3 relative overflow-hidden"><img :src="`https://picsum.photos/id/${20+i}/200/150`" class="w-full h-full object-cover"><div class="absolute bottom-0 right-0 bg-black/60 text-white text-[8px] px-1">15:00</div></div>
-                        <div class="flex-1"><div class="font-bold text-sm text-gray-800 leading-tight">开门红业绩翻倍秘籍</div><div class="text-xs text-gray-400 mt-1">1200人已学</div></div>
-                    </div>
-                </div>
-            </div>
-        </transition>
-        <transition name="slide-in-right">
             <div v-if="activePage === 'trainingDetail'" class="absolute inset-0 z-50 bg-white flex flex-col">
                 <div class="h-56 bg-black relative mt-12 flex flex-col justify-between">
                     <div class="flex justify-between items-center p-3 z-10 bg-gradient-to-b from-black/60 to-transparent"><span class="cursor-pointer text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6"></i></span><span class="cursor-pointer text-white" @click="showToast('分享课程')"><i data-lucide="share-2" class="w-5 h-5"></i></span></div>
@@ -2022,26 +2439,6 @@
                 <div class="border-t border-gray-100 p-3 flex justify-between items-center bg-white"><div class="flex flex-col items-center text-gray-500 cursor-pointer" @click="showToast('已收藏')"><i data-lucide="star" class="w-5 h-5 mb-0.5"></i><span class="text-[10px]">收藏</span></div><button class="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-full shadow-md ml-2" @click="showToast('继续学习')">继续学习</button></div>
             </div>
         </transition>
-        <transition name="slide-in-right">
-            <div v-if="activePage === 'trainingLecturer'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
-                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">讲师中心</h1></div>
-                <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                    <div v-for="tutor in tutorDataList" :key="tutor.id" class="bg-white rounded-xl shadow-sm p-4 cursor-pointer" @click="showToast('进入讲师详情')">
-                        <div class="flex items-start"><img :src="tutor.avatar" class="w-12 h-12 rounded-full border border-gray-100 mr-3"><div class="flex-1"><h3 class="font-bold text-gray-800">{{tutor.name}}</h3><div class="text-xs text-gray-500 mt-1">人气 9.8万 · 课程 15</div></div><button class="text-xs text-blue-600 border border-blue-600 px-3 py-0.5 rounded-full">+ 关注</button></div>
-                    </div>
-                </div>
-            </div>
-        </transition>
-        <transition name="slide-in-right">
-            <div v-if="activePage === 'trainingMy'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
-                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">我的学习</h1></div>
-                <div class="flex-1 overflow-y-auto p-4">
-                    <div class="bg-white p-4 mb-2"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">本月学习概览</h3><button class="bg-blue-50 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full" @click="showToast('打卡成功！')">学习打卡</button></div><div class="flex divide-x divide-gray-100 text-center"><div class="flex-1"><div class="text-2xl font-black text-gray-800 mb-1">12 <span class="text-xs font-normal text-gray-500">天</span></div><div class="text-xs text-gray-500">打卡天数</div></div><div class="flex-1"><div class="text-2xl font-black text-gray-800 mb-1">4.5 <span class="text-xs font-normal text-gray-500">时</span></div><div class="text-xs text-gray-500">学习时长</div></div></div></div>
-                    <div class="bg-white p-4"><h3 class="font-bold text-gray-800 mb-4">我的课程</h3><div class="flex items-center cursor-pointer" @click="goToPage('trainingDetail')"><div class="w-24 h-16 bg-gray-100 rounded mr-3 overflow-hidden"><img src="https://picsum.photos/id/21/200/150" class="w-full h-full object-cover"></div><div class="flex-1"><div class="font-bold text-sm text-gray-800 mb-2">基础销售技能特训营</div><div class="text-xs text-blue-500 font-medium">已学 40%</div></div><button class="bg-blue-50 text-blue-600 text-xs px-3 py-1 rounded-full border border-blue-100">继续学习</button></div></div>
-                </div>
-            </div>
-        </transition>
-
         <!-- 计划书子页：我的计划书 / 产品PK / 分红实现率 / 查保司 / 新建计划书 / 计划书详情 -->
         <transition name="slide-in-right">
             <div v-if="activePage === 'myPlans'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
@@ -2145,7 +2542,7 @@
 
                 const goToPage = (page, data = null) => {
                     pageStack.value.push(activePage.value);
-                    if (data && page === 'productDetail') {
+                    if (data && (page === 'productDetail' || page === 'productMaterials')) {
                         currentProduct.value = data;
                     }
                     if (page === 'search') {
@@ -2173,7 +2570,9 @@
                     { id: 'profile', name: '我的', icon: 'user' }
                 ];
 
-                const homeActions = [
+                const hasOnboarded = ref(false); // 代理人是否已入职成功，可切换以查看首页入口变化
+                const onboardApproved = ref(false); // 审核是否通过（通过后可投保），可在审核中页点击「模拟审核通过」
+                const homeActionsBefore = [
                     { name: '加入保通', icon: 'badge-plus', bgClass: 'bg-blue-500', iconColor: 'text-blue-600', badge: '必读' },
                     { name: '领万元奖', icon: 'gift', bgClass: 'bg-red-500', iconColor: 'text-red-500', badge: '金标' },
                     { name: '导师带教', icon: 'graduation-cap', bgClass: 'bg-orange-500', iconColor: 'text-orange-500', badge: '1v1' },
@@ -2185,6 +2584,19 @@
                     { name: '荣誉体系', icon: 'medal', bgClass: 'bg-yellow-500', iconColor: 'text-yellow-600' },
                     { name: '增员专区', icon: 'user-plus', bgClass: 'bg-red-400', iconColor: 'text-red-500' }
                 ];
+                const homeActionsAfter = [
+                    { name: '朋友圈', icon: 'aperture', bgClass: 'bg-purple-500', iconColor: 'text-purple-500', badge: '日签' },
+                    { name: 'i生活', icon: 'coffee', bgClass: 'bg-green-500', iconColor: 'text-green-500' },
+                    { name: '客户管理', icon: 'users', bgClass: 'bg-blue-500', iconColor: 'text-blue-600' },
+                    { name: '续保管理', icon: 'refresh-cw', bgClass: 'bg-cyan-500', iconColor: 'text-cyan-500' },
+                    { name: '团险', icon: 'building-2', bgClass: 'bg-indigo-500', iconColor: 'text-indigo-500' },
+                    { name: '增员有礼', icon: 'user-plus', bgClass: 'bg-red-400', iconColor: 'text-red-500' },
+                    { name: '计划书', icon: 'file-text', bgClass: 'bg-cyan-500', iconColor: 'text-cyan-500' },
+                    { name: '荣誉体系', icon: 'medal', bgClass: 'bg-yellow-500', iconColor: 'text-yellow-600' },
+                    { name: '培训', icon: 'presentation', bgClass: 'bg-pink-500', iconColor: 'text-pink-500' },
+                    { name: '活动中心', icon: 'megaphone', bgClass: 'bg-orange-500', iconColor: 'text-orange-500' }
+                ];
+                const homeActions = computed(() => hasOnboarded.value ? homeActionsAfter : homeActionsBefore);
 
                 const profileTools = [
                     { name: 'AI助手', icon: 'bot', color: 'text-blue-500' },
@@ -2252,6 +2664,32 @@
                     setTimeout(() => { joinedTutorId.value = id; showToast('已成功加入导师团队！'); }, 1000);
                 };
                 const momentsCategory = ref('节日');
+
+                // 培训模块（按截图：首页/课程中心/讲师中心/我的）
+                const trainingTab = ref('home');
+                const trainingCategory = ref('推荐');
+                const trainingCategories = ['推荐', '新星启航', '专属成长', '业绩突破', '众民保专区', '开门红专区', '分红专区', '医疗险专区', '自媒体营销', '产品服务', '合规园地', '组织发展', '分级分类', '自我赋能'];
+                const trainingCourseSort = ref('recommend');
+                const trainingMyFollow = ref(false);
+                const trainingMyCourseTab = ref('learning');
+                const trainingHomeCourses = ref([
+                    { id: 1, title: '众民保销售绩优分享', label: '销售分享', lessons: 3, learned: 179, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=m1', tags: [] },
+                    { id: 2, title: '康乾8号·特定疾病保险(互联网)', label: '3月主推', lessons: 2, learned: 408, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=f1', tags: ['产品', '速读'] },
+                    { id: 3, title: '太保蛮好的人生(2025)年金保险(分红型)', label: '3月主推', lessons: 1, learned: 820, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=f2', tags: ['产品', '速读'] }
+                ]);
+                const trainingCourseList = ref([
+                    { id: 1, title: '众民保销售绩优分享', label: '销售分享', lessons: 3, learned: 179, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=m1', tags: [] },
+                    { id: 2, title: '康乾8号·特定疾病保险(互联网)', label: '3月主推', lessons: 2, learned: 408, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=f1', tags: ['产品', '速读'] },
+                    { id: 3, title: '太保蛮好的人生(2025)年金保险(分红型)', label: '3月主推', lessons: 1, learned: 820, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=f2', tags: ['产品', '速读'] },
+                    { id: 4, title: '平安岁月长安·特定疾病保险(互联网版)', label: '3月主推', lessons: 2, learned: 746, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=m2', tags: ['产品'] },
+                    { id: 5, title: 'i云保出单速通攻略', label: '速通攻略', lessons: 5, learned: 8211, cover: 'https://api.dicebear.com/7.x/avataaars/svg?seed=c1', tags: ['新人', 'i云保', '投保'] }
+                ]);
+                const trainingLecturerList = ref([
+                    { id: 1, name: '谢锦程', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=xie', popularity: 98, follow: 823, lessons: 1, skills: ['重疾'] },
+                    { id: 2, name: '赖春林', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lai', popularity: 388, follow: 591, lessons: 1, skills: ['组织发展', '团队管理', '文化建设'] },
+                    { id: 3, name: '龚粤', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=gong', popularity: 256, follow: 412, lessons: 2, skills: ['高客服务', '销售逻辑', '年金终寿'] },
+                    { id: 4, name: '闫路成', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yan', popularity: 120, follow: 88, lessons: 1, skills: [] }
+                ]);
                 const isAIChatMode = ref(false);
                 const currentSearchTab = ref('all');
                 const searchTabsList = [
@@ -2310,6 +2748,52 @@
                     return '暂无已失效订单';
                 });
 
+                // 19. 产品模块：地区、筛选
+                const productRegion = ref('全国');
+                const productRegionList = ['全国', '北京市', '上海市', '天津市', '重庆市', '广东省', '浙江省', '江苏省', '山东省', '四川省'];
+                const showProductRegion = ref(false);
+                const showProductFilter = ref(false);
+                const productFilterType = ref('全部');
+                const productFilterTypes = ['全部', '医疗', '意外', '团险', '定寿', '终寿', '重疾', '年金', '财产', '航旅', '其他', '分红险'];
+                const productFilterRecommend = ref('');
+                const productFilterRecommends = ['新上线', '个养税优', '热销产品', '父母优选', '高端保障', '成人推荐', '少儿优选'];
+                const productFilterCompany = ref([]);
+                const productFilterCompanyList = ['众安财险', '复星联合健康', '中意人寿', '平安健康', '大家养老', '人保健康', '平安财险'];
+                const productFilterGold = ref(false);
+                const filteredProductList = computed(() => {
+                    let list = products.value;
+                    if (productFilterType.value && productFilterType.value !== '全部') {
+                        const typeMap = { 医疗: '医疗险', 意外: '意外险', 团险: '团财险', 定寿: '定寿', 终寿: '终身寿', 重疾: '重疾险', 年金: '年金险', 财产: '团财险', 航旅: '意外险', 其他: '互联网产品', 分红险: '分红险' };
+                        const t = typeMap[productFilterType.value] || productFilterType.value;
+                        list = list.filter(p => (p.type || '').indexOf(t) >= 0 || t === '互联网产品');
+                    }
+                    if (productFilterGold.value) list = list.filter(p => (p.tags || []).includes('金标'));
+                    if (productFilterCompany.value.length > 0) list = list.filter(p => productFilterCompany.value.includes(p.insurer));
+                    return list;
+                });
+                const toggleProductCompany = (c) => {
+                    const i = productFilterCompany.value.indexOf(c);
+                    if (i >= 0) productFilterCompany.value = productFilterCompany.value.filter(x => x !== c);
+                    else if (productFilterCompany.value.length < 6) productFilterCompany.value = [...productFilterCompany.value, c];
+                };
+                const resetProductFilter = () => {
+                    productFilterType.value = '全部';
+                    productFilterRecommend.value = '';
+                    productFilterCompany.value = [];
+                    productFilterGold.value = false;
+                };
+                const applyProductFilter = () => { showProductFilter.value = false; };
+
+                const productMaterialEntries = ['产品介绍', '费率表', '健康告知', '投保须知', '职业类别', '常见问题', '附加服务', '产品条款', '转续保规则', '特别约定', '销售思路', '其他', '告知与声明'];
+                const applyStep = ref(0);
+                const goToPlanFromProduct = () => {
+                    goToPage('planCreate');
+                    showToast('已添加当前产品，可生成计划书');
+                };
+                const goToApplyFromProduct = () => {
+                    applyStep.value = 0;
+                    goToPage('apply');
+                };
 
                 // ============= 入职保通流程全家桶 (Onboard Module) =============
                 const onboardStep = ref(0);
@@ -2414,6 +2898,7 @@
                 const submitOnboardFinal = () => {
                     showToast('资料已提交');
                     onboardStep.value = 8;
+                    hasOnboarded.value = true; // 入职申请已提交，首页快捷入口切换为入职后
                     refreshIcons();
                 };
 
@@ -2429,7 +2914,11 @@
                     else if(item.name === '计划书') currentTab.value = 'plan';
                     else if(item.name === '培训') goToPage('training');
                     else if(item.name === '荣誉体系') goToPage('honorSystem');
-                    else if(item.name === '增员专区') goToPage('recruit');
+                    else if(item.name === '增员专区' || item.name === '增员有礼') goToPage('recruit');
+                    else if(item.name === '客户管理') { currentTab.value = 'mprc'; }
+                    else if(item.name === '续保管理') goToPage('renewalManage');
+                    else if(item.name === '团险') goToPage('groupInsurance');
+                    else if(item.name === '活动中心') goToPage('activityCenter');
                     else showToast(`进入模块: ${item.name}`);
                 };
 
@@ -2460,13 +2949,13 @@
                     const opts = renewalSortOptions.value;
                     if (opts.length && !opts.includes(renewalSort.value)) renewalSort.value = opts[0];
                 });
-                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep, honorWallTab, renewalCategory, renewalStatus], refreshIcons);
+                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep, honorWallTab, renewalCategory, renewalStatus, showProductFilter, applyStep, trainingTab], refreshIcons);
 
                 onMounted(() => { refreshIcons(); });
 
                 return {
                     activePage, currentTab, isDarkStatus, goToPage, goBack,
-                    tabs, homeActions, profileTools, products, productGroups,
+                    tabs, homeActions, hasOnboarded, profileTools, products, productGroups,
                     handleHomeAction, handleProfileTool,
                     toastMessage, showToast,
                     // 导师 / 朋友圈 / 搜索 & AI
@@ -2474,6 +2963,8 @@
                     searchTabsList, searchQuery, hasSearched, searchHistory, currentSearchTab,
                     performSearch, performSearchWord, isAIChatMode, startAIChat,
                     customizationStep,
+                    trainingTab, trainingCategory, trainingCategories, trainingCourseSort, trainingMyFollow, trainingMyCourseTab,
+                    trainingHomeCourses, trainingCourseList, trainingLecturerList,
                     // Onboard 全家桶
                     onboardStep, onboardAgree, idUploaded, faceAgree, isScanning, 
                     onboardForm, showCommitment, signAgree, showSignaturePad, isDrawn,
@@ -2492,7 +2983,13 @@
                     // 18 续保管理
                     renewalCategories, renewalCategory, renewalStatusList, renewalStatus,
                     renewalSortOptions, renewalSort, renewalHideFilter, renewalPolicyType, renewalType, renewalTypeLong,
-                    showRenewalAdvanced, renewalList, renewalEmptyText
+                    showRenewalAdvanced, renewalList, renewalEmptyText,
+                    // 19 产品与投保
+                    productRegion, productRegionList, showProductRegion, showProductFilter, productFilterType, productFilterRecommend,
+                    productFilterCompany, productFilterCompanyList, productFilterGold, filteredProductList,
+                    toggleProductCompany, resetProductFilter, applyProductFilter,
+                    productMaterialEntries, applyStep, goToPlanFromProduct, goToApplyFromProduct,
+                    onboardApproved
                 };
             }
         }).mount('#app');

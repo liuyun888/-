@@ -47,17 +47,64 @@
                 <span class="font-bold text-lg text-white tracking-tight">中介云平台</span>
             </div>
             
-            <!-- 菜单列表 -->
+            <!-- 菜单列表：产品管理 + 车险管理（一级可收起/放开） -->
             <div class="flex-1 overflow-y-auto py-4">
                 <div class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">产品中台</div>
                 <nav class="space-y-1 px-3">
-                    <a v-for="menu in menus" :key="menu.id" 
-                       @click="activeMenu = menu.id"
-                       class="flex items-center px-3 py-2.5 rounded-lg cursor-pointer transition-colors"
-                       :class="activeMenu === menu.id ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-slate-800 hover:text-white'">
-                        <i :data-lucide="menu.icon" class="w-5 h-5 mr-3" :class="activeMenu === menu.id ? 'text-white' : 'text-slate-400'"></i>
-                        <span class="font-medium text-sm">{{ menu.name }}</span>
-                    </a>
+                    <!-- 一级：产品管理（可收起/放开） -->
+                    <div class="rounded-lg overflow-hidden">
+                        <div @click="productExpanded = !productExpanded"
+                             class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors hover:bg-slate-800 hover:text-white">
+                            <div class="flex items-center min-w-0">
+                                <i data-lucide="package" class="w-5 h-5 mr-3 text-slate-400 shrink-0"></i>
+                                <span class="font-medium text-sm">产品管理</span>
+                            </div>
+                            <i :data-lucide="productExpanded ? 'chevron-up' : 'chevron-down'" class="w-4 h-4 text-slate-500 shrink-0 ml-1"></i>
+                        </div>
+                        <transition name="fade">
+                            <div v-show="productExpanded" class="space-y-0.5 mt-0.5">
+                                <a v-for="menu in productMenus" :key="menu.id"
+                                   @click="activeMenu = menu.id"
+                                   class="flex items-center pl-11 pr-3 py-2 rounded-lg cursor-pointer transition-colors text-sm"
+                                   :class="activeMenu === menu.id ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-slate-800 hover:text-white text-slate-300'">
+                                    <i :data-lucide="menu.icon" class="w-4 h-4 mr-2.5 shrink-0" :class="activeMenu === menu.id ? 'text-white' : 'text-slate-400'"></i>
+                                    <span class="font-medium truncate">{{ menu.name }}</span>
+                                </a>
+                            </div>
+                        </transition>
+                    </div>
+                    <!-- 一级：车险管理（可收起/放开，含二级菜单 + 三级功能点） -->
+                    <div class="rounded-lg overflow-hidden">
+                        <div @click="carExpanded = !carExpanded"
+                             class="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors hover:bg-slate-800 hover:text-white">
+                            <div class="flex items-center min-w-0">
+                                <i data-lucide="car" class="w-5 h-5 mr-3 text-slate-400 shrink-0"></i>
+                                <span class="font-medium text-sm">车险管理</span>
+                            </div>
+                            <i :data-lucide="carExpanded ? 'chevron-up' : 'chevron-down'" class="w-4 h-4 text-slate-500 shrink-0 ml-1"></i>
+                        </div>
+                        <transition name="fade">
+                            <div v-show="carExpanded" class="space-y-0.5 mt-0.5">
+                                <div v-for="group in carMenuGroups" :key="group.id" class="rounded-lg overflow-hidden">
+                                    <div @click.stop="toggleCarGroup(group.id)"
+                                         class="flex items-center justify-between pl-11 pr-3 py-2 rounded-lg cursor-pointer transition-colors hover:bg-slate-800 hover:text-white text-slate-300">
+                                        <span class="font-medium text-sm truncate">{{ group.name }}</span>
+                                        <i :data-lucide="carGroupExpanded[group.id] ? 'chevron-up' : 'chevron-down'" class="w-4 h-4 text-slate-500 shrink-0 ml-1"></i>
+                                    </div>
+                                    <transition name="fade">
+                                        <div v-show="carGroupExpanded[group.id]" class="space-y-0.5">
+                                            <a v-for="item in group.children" :key="item.id"
+                                               @click="activeMenu = item.id"
+                                               class="flex items-center pl-14 pr-3 py-2 rounded-lg cursor-pointer transition-colors text-sm"
+                                               :class="activeMenu === item.id ? 'bg-blue-600 text-white shadow-md' : 'hover:bg-slate-800 hover:text-white text-slate-300'">
+                                                <span class="font-medium truncate">{{ item.name }}</span>
+                                            </a>
+                                        </div>
+                                    </transition>
+                                </div>
+                            </div>
+                        </transition>
+                    </div>
                 </nav>
             </div>
 
@@ -79,6 +126,8 @@
                     <i data-lucide="menu" class="w-5 h-5 mr-4 text-slate-400 cursor-pointer hover:text-slate-600"></i>
                     <span>产品中台</span>
                     <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
+                    <span>{{ currentSectionName }}</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4 mx-2"></i>
                     <span class="text-slate-900 font-semibold">{{ currentMenuName }}</span>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -96,15 +145,16 @@
 
                         <!-- ================= 0.1 平台产品 (产销对接) ================= -->
                         <div v-if="activeMenu === 'platform_products'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【平台产品库】。展示产销对接的平台产品列表，支持按全部/已推广/未推广筛选；可查看产品详情与宣传奖励明细、立即签约、对产品执行立即推广或停止推广。推广后自动上架至PC出单中心和APP。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">平台产品库</h1>
                                 <button @click="showSignModal = true" class="btn-primary bg-indigo-600 hover:bg-indigo-700"><i data-lucide="scan-line" class="w-4 h-4 mr-1.5"></i>立即签约</button>
                             </div>
                             <!-- 筛选区 -->
                             <div class="flex space-x-2 border-b border-slate-200 pb-4">
-                                <button class="px-4 py-1.5 bg-blue-600 text-white rounded-full text-sm font-medium">全部</button>
-                                <button class="px-4 py-1.5 bg-white border border-slate-300 text-slate-600 rounded-full text-sm hover:bg-slate-50">已推广</button>
-                                <button class="px-4 py-1.5 bg-white border border-slate-300 text-slate-600 rounded-full text-sm hover:bg-slate-50">未推广</button>
+                                <button @click="showToast('筛选：全部', 'info')" class="px-4 py-1.5 bg-blue-600 text-white rounded-full text-sm font-medium">全部</button>
+                                <button @click="showToast('筛选：已推广', 'info')" class="px-4 py-1.5 bg-white border border-slate-300 text-slate-600 rounded-full text-sm hover:bg-slate-50">已推广</button>
+                                <button @click="showToast('筛选：未推广', 'info')" class="px-4 py-1.5 bg-white border border-slate-300 text-slate-600 rounded-full text-sm hover:bg-slate-50">未推广</button>
                             </div>
                             <!-- 产品卡片列表 -->
                             <div class="space-y-4">
@@ -138,12 +188,13 @@
 
                         <!-- ================= 0.2 协议管理 ================= -->
                         <div v-if="activeMenu === 'agreement'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【协议管理】。管理保险专业代理协议，支持按标题、协议号、协议状态、保险公司筛选查询；可新增协议、协议信息批量导入、导出；列表支持编辑、查看、删除。协议信息以用户维度存储，与保司签约关系关联。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">协议管理</h1>
                                 <div class="space-x-3">
                                     <button @click="openAddAgreementDrawer" class="btn-primary"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>新增协议</button>
                                     <button @click="showImportModal = true" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"><i data-lucide="file-up" class="w-4 h-4 inline-block mr-1.5"></i>协议信息导入</button>
-                                    <button class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">导出</button>
+                                    <button @click="showToast('导出协议列表', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">导出</button>
                                 </div>
                             </div>
                             <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
@@ -152,7 +203,7 @@
                                     <input type="text" placeholder="请输入协议号" class="form-input text-sm">
                                     <select class="form-select text-sm"><option>请选择协议状态</option></select>
                                     <select class="form-select text-sm"><option>请选择保险公司</option></select>
-                                    <button class="btn-primary col-span-1">查询</button>
+                                    <button @click="showToast('查询成功', 'success')" class="btn-primary col-span-1">查询</button>
                                 </div>
                                 <table class="w-full text-left whitespace-nowrap">
                                     <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
@@ -169,7 +220,7 @@
                                                 <!-- 修改点1：绑定编辑和查看事件 -->
                                                 <button @click="openEditAgreementDrawer(agr)" class="text-blue-600 hover:underline">编辑</button>
                                                 <button @click="openViewAgreementDrawer(agr)" class="text-blue-600 hover:underline">查看</button>
-                                                <button class="text-red-500 hover:underline">删除</button>
+                                                <button @click="showToast('删除协议', 'info')" class="text-red-500 hover:underline">删除</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -179,6 +230,7 @@
 
                         <!-- ================= 0.3 商城分类 ================= -->
                         <div v-if="activeMenu === 'mall_category'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【商城分类】。管理商城前端展示的险种/产品分类，支持添加分类；列表展示商城分类名称、排序、分类来源、状态，支持编辑、删除。分类用于产品展示与导航。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">商城分类</h1>
                                 <button @click="showToast('打开添加分类弹窗', 'info')" class="btn-primary"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>添加分类</button>
@@ -195,8 +247,8 @@
                                             <td class="px-5 py-4 text-slate-500">{{ cat.source }}</td>
                                             <td class="px-5 py-4"><span class="text-green-600">已启用</span></td>
                                             <td class="px-5 py-4 text-right space-x-3">
-                                                <button class="text-blue-600 hover:underline">编辑</button>
-                                                <button class="text-slate-400 hover:text-red-500 hover:underline">删除</button>
+                                                <button @click="showToast('编辑商城分类', 'info')" class="text-blue-600 hover:underline">编辑</button>
+                                                <button @click="showToast('删除分类', 'info')" class="text-slate-400 hover:text-red-500 hover:underline">删除</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -206,6 +258,7 @@
 
                         <!-- ================= 1. 合作保司管理 ================= -->
                         <div v-if="activeMenu === 'insurers'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【合作保司管理】。维护合作保险公司档案：公司代码/名称、公司类型（车险/寿险/非车等）、API对接开关、状态；支持新增合作保司、编辑、寿险扩展（银行结算等）、工号管理；可启用/停用保司，停用后关联产品异步下架。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">合作保司管理</h1>
                                 <button @click="openAddInsurerDrawer" class="btn-primary"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>新增合作保司</button>
@@ -259,6 +312,7 @@
 
                         <!-- ================= 2. 险种分类 ================= -->
                         <div v-if="activeMenu === 'categories'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【险种分类树】。左侧为系统预置分类（只读），右侧为自定义扩展分类；自定义分类用于产品归属与筛选，支持新增自定义分类、编辑、启用/停用、删除。分类代码全局唯一，名称至少2字符。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">险种分类树</h1>
                                 <button @click="openAddCategoryModal" class="btn-primary"><i data-lucide="folder-plus" class="w-4 h-4 mr-1.5"></i>新增自定义分类</button>
@@ -324,7 +378,7 @@
 
                         <!-- ================= 3. 产品列表 (通用) ================= -->
                         <div v-if="activeMenu === 'products'" class="space-y-6">
-                            <!-- 共用你之前看到的搜索过滤区域和表格，由于篇幅，这里做核心结构展示 -->
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【车险/非车产品管理】。管理基础产品档案：产品名称/代码、类型、库存、状态；支持按产品名称/代码、保司、状态查询，录入新产品；车险产品可配置费率表与授权，所有产品可上架/下架。产品处于草稿可编辑，上架后可下架。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">车险/非车产品管理</h1>
                                 <button @click="openAddProductDrawer" class="btn-primary"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>录入新产品</button>
@@ -376,6 +430,7 @@
 
                         <!-- ================= 4. 非车险产品设置 ================= -->
                         <div v-if="activeMenu === 'non_vehicle'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【非车险产品管理】。含 Tab：系统产品方案（总部定义的产品方案列表）、险种类别（只读）、系统产品（只读）、自定义产品（可增删改）。自定义产品可配置方案与责任、编辑、分享、删除；保单录入时可选自定义产品。</div>
                             <h1 class="text-xl font-bold text-slate-800">非车险产品管理</h1>
                             
                             <!-- Tabs -->
@@ -457,7 +512,7 @@
                                             <div class="flex space-x-4">
                                                 <select class="form-select text-sm py-1.5 w-48"><option>全部保司</option><option v-for="ins in insurersList">{{ ins.company_name }}</option></select>
                                                 <input type="text" placeholder="自定义产品名称搜索" class="form-input text-sm py-1.5 w-64">
-                                                <button class="btn-primary py-1.5 text-sm">查询</button>
+                                                <button @click="showToast('查询成功', 'success')" class="btn-primary py-1.5 text-sm">查询</button>
                                             </div>
                                             <button @click="openNvCustomModal(null)" class="btn-primary bg-emerald-600 hover:bg-emerald-700"><i data-lucide="plus" class="w-4 h-4 mr-1"></i>新增自定义产品</button>
                                         </div>
@@ -492,6 +547,7 @@
 
                         <!-- ================= 5. 寿险产品管理 ================= -->
                         <div v-if="activeMenu === 'life_products'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【寿险产品管理】。管理寿险产品：产品(寿险)、细分/保障期、费率表配置（Excel导入）、绑定问卷、状态；支持新增寿险产品、编辑、机构授权、上架/下架。寿险专属扩展字段（缴费方式、保障期限等）在新增/编辑时配置；需先维护费率表方可上架。</div>
                             <div class="flex justify-between items-center">
                                 <div>
                                     <h1 class="text-xl font-bold text-slate-800 flex items-center">
@@ -541,8 +597,8 @@
                                                 </span>
                                             </td>
                                             <td class="px-5 py-4 text-right space-x-3 text-sm">
-                                                <button class="text-slate-600 font-medium hover:text-blue-600">编辑</button>
-                                                <button class="text-slate-600 font-medium hover:text-blue-600">机构授权</button>
+                                                <button @click="showToast('编辑寿险产品', 'info')" class="text-slate-600 font-medium hover:text-blue-600">编辑</button>
+                                                <button @click="showToast('机构授权（寿险产品）', 'info')" class="text-slate-600 font-medium hover:text-blue-600">机构授权</button>
                                                 <button @click="toggleLifeStatus(life)" :class="life.status===1 ? 'text-red-500' : 'text-green-600'" class="font-medium">{{ life.status===1 ? '下架' : '上架' }}</button>
                                             </td>
                                         </tr>
@@ -553,6 +609,7 @@
 
                         <!-- ================= 6. 健康告知问卷 ================= -->
                         <div v-if="activeMenu === 'questionnaire'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【健康告知问卷模板】。管理健康告知题目与选项，用于寿险等产品投保时展示；支持新建问卷模板、编辑题目、配置逻辑（规则引擎）、预览、启用/停用、复制。问卷可绑定适用险种，题目支持是否/单选/多选/填空/数字/日期等类型。</div>
                             <div class="flex justify-between items-center">
                                 <h1 class="text-xl font-bold text-slate-800">健康告知问卷模板</h1>
                                 <button @click="openAddQuestionnaireDrawer" class="btn-primary bg-indigo-600 hover:bg-indigo-700"><i data-lucide="file-edit" class="w-4 h-4 mr-1.5"></i>新建问卷模板</button>
@@ -585,6 +642,382 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- ================= 车险 · 保单录入（PRD 3.1 手工单笔录入；优保联 44-46：切换出单网→工号+保单号→放大镜获取→填写业务员→保存；录单问题排查） ================= -->
+                        <div v-if="activeMenu === 'car_policy_entry'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保单录入】。支持手工单笔录入：选择保险公司、出单工号、业务员，填写保单号/车牌/VIN/险种类型/保费/签单与起止期等；PRD 支持直连/手工录入方式。优保联流程：切换出单网 → 输入工号与保单号并点击放大镜获取 → 带出信息后填写业务员并保存。下方附录单问题排查步骤。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">保单录入</h1><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">车险 · 保单管理</span></div>
+                            <div class="bg-amber-50/50 border border-amber-100 rounded-lg p-4 text-sm text-slate-700 mb-4">
+                                <strong>保单录入流程（优保联）：</strong> 一、打开保单录入菜单 二、点击切换出单网 三、输入工号和保单号后，点后面放大镜获取信息 四、打开查看其他信息 五、将保单信息全部带出，核对信息无误后，填写业务员，提交保单信息保存即可。
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-3xl">
+                                <div class="flex flex-wrap items-center gap-3 mb-6">
+                                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">切换出单网</button>
+                                    <span class="text-slate-500 text-sm">（录单前请先切换至对应出单网）</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div><label class="block text-sm font-medium text-slate-600 mb-1">工号 <span class="text-red-500">*</span></label><select class="form-select text-sm w-full"><option value="">请选择</option><option>A000101</option><option>GD-A882</option></select></div>
+                                    <div class="flex items-end"><label class="block text-sm font-medium text-slate-600 mb-1 w-0 overflow-hidden">保单号</label><div class="flex-1 flex gap-2"><input type="text" placeholder="请输入保单号" class="form-input text-sm flex-1" /><button class="btn-primary shrink-0" title="获取信息"><i data-lucide="search" class="w-4 h-4"></i></button></div></div>
+                                </div>
+                                <div class="mb-4"><button class="text-blue-600 text-sm font-medium hover:underline flex items-center">打开查看其他信息 <i data-lucide="chevron-down" class="w-4 h-4 ml-1"></i></button></div>
+                                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200 mb-4 text-sm">
+                                    <div class="text-slate-500 mb-2">带出的保单信息（核对无误后填写业务员并保存）</div>
+                                    <div class="grid grid-cols-2 gap-2 text-slate-700"><div>保险公司：—</div><div>保单号：—</div><div>车牌号：—</div><div>起保/止期：—</div><div>保费（交强）：—</div><div>保费（商业）：—</div></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 mb-4"><div><label class="block text-sm font-medium text-slate-600 mb-1">业务员 <span class="text-red-500">*</span></label><input type="text" placeholder="选择人员" class="form-input text-sm w-full" /></div></div>
+                                <div class="flex gap-3"><button @click="showToast('保单信息保存成功', 'success')" class="btn-primary"><i data-lucide="save" class="w-4 h-4 mr-1.5"></i>提交保单信息保存</button></div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 max-w-3xl">
+                                <h3 class="text-sm font-semibold text-slate-700 mb-2">录单问题排查步骤</h3>
+                                <p class="text-sm text-slate-600 mb-2">无法成功录单会有三种提示：没有获取到保单信息、工号错误、未成功建立连接。</p>
+                                <ul class="text-sm text-slate-600 space-y-1 list-disc list-inside"><li>没有获取到保单：需用录单时选择的工号在出单中心登录保司系统并查询此保单；保司内查不到无法录单；可查到但无法录单请联系优保联客服。</li><li>工号错误：工号对应密码错误或机构代码、出单网址有误，联系总部管理员核实修改。</li><li>未成功建立连接：多为网络原因，如人保需 VPN 或先手动点击切换出单网后重试。</li></ul>
+                            </div>
+                        </div>
+
+                        <!-- ================= 车险 · 批量录单（优保联 47：保单号、车牌号批量录入；下载模板→填写上传→预解析→异步写库→查看结果） ================= -->
+                        <div v-if="activeMenu === 'car_batch_plate'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【批量录单】。支持按保单号、车牌号批量录入：下载导入模板 → 填写并上传 xlsx/xls（≤10MB）→ 预解析预览（正常/错误/重复行）→ 确认后异步写库并触发佣金计算；在保单查询的任务列表可查看批次状态与失败明细下载。</div>
+                            <div class="flex justify-between items-center">
+                                <h1 class="text-xl font-bold text-slate-800">批量录单</h1>
+                                <div class="flex gap-3"><button @click="showToast('下载导入模板', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1.5"></i>下载模板</button><button @click="showToast('选择文件上传', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium"><i data-lucide="file-up" class="w-4 h-4 mr-1.5"></i>上传文件</button></div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left whitespace-nowrap">
+                                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200"><tr><th class="px-5 py-3 font-medium">批次号</th><th class="px-5 py-3 font-medium">文件名</th><th class="px-5 py-3 font-medium">总行数</th><th class="px-5 py-3 font-medium">成功</th><th class="px-5 py-3 font-medium">失败</th><th class="px-5 py-3 font-medium">状态</th><th class="px-5 py-3 font-medium">导入时间</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead>
+                                        <tbody class="divide-y divide-slate-100 text-sm">
+                                            <tr v-for="b in carImportBatches" :key="b.batchNo" class="hover:bg-slate-50"><td class="px-5 py-3 font-mono text-slate-700">{{ b.batchNo }}</td><td class="px-5 py-3 truncate max-w-[180px]" :title="b.fileName">{{ b.fileName }}</td><td class="px-5 py-3">{{ b.totalCount }}</td><td class="px-5 py-3 text-green-600">{{ b.successCount }}</td><td class="px-5 py-3 text-red-600">{{ b.failCount }}</td><td class="px-5 py-3"><span :class="b.statusClass">{{ b.statusText }}</span></td><td class="px-5 py-3 text-slate-500">{{ b.createTime }}</td><td class="px-5 py-3 text-right"><button v-if="b.failCount > 0" class="text-blue-600 hover:underline mr-2">下载失败明细</button><button class="text-blue-600 hover:underline">查看</button></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div v-if="carImportBatches.length === 0" class="p-10 text-center text-slate-400">暂无导入记录，请先上传文件</div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 车险 · 批单录入（PRD 3.3 批改单；优保联 48：原保单号回填→批改类型/批单号/日期/保费差额→保存；批改历史） ================= -->
+                        <div v-if="activeMenu === 'car_endorsement'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【批单录入】。输入原保单号自动回填保险公司、险种、车辆信息、原保费；填写批改类型（增保/减保/变更标的/其他）、批改保单号、批改日期、保费差额（加保正数、退保负数）；保存后更新原保单净保费与手续费，批单独立存档。可从保单查询列表点击「录入批单」跳转带出原保单号；支持查看批改历史。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">批单录入</h1><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">车险 · 保单管理</span></div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 max-w-4xl">
+                                <div class="bg-slate-50 rounded-lg p-3 text-sm text-slate-600 mb-5">申能录单没有带出非车的查询路径。可在本页直接录入批单，或从【保单查询】列表对保单点击【录入批单】跳转并带出原保单号。</div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="col-span-2"><label class="block text-sm font-medium text-slate-600 mb-1">原保单号 <span class="text-red-500">*</span></label><input type="text" placeholder="输入后自动回填" class="form-input text-sm w-72" /></div>
+                                    <div><label class="block text-sm font-medium text-slate-600 mb-1">批改类型 <span class="text-red-500">*</span></label><select class="form-select text-sm"><option>增保</option><option>减保</option><option>变更标的</option><option>其他</option></select></div>
+                                    <div><label class="block text-sm font-medium text-slate-600 mb-1">批改保单号 <span class="text-red-500">*</span></label><input type="text" class="form-input text-sm" /></div>
+                                    <div><label class="block text-sm font-medium text-slate-600 mb-1">批改日期</label><input type="date" class="form-input text-sm" /></div>
+                                    <div><label class="block text-sm font-medium text-slate-600 mb-1">保费差额（元）</label><input type="number" step="0.01" placeholder="加保填正数，退保填负数" class="form-input text-sm" /></div>
+                                </div>
+                                <div class="mt-5 flex gap-3"><button class="btn-primary"><i data-lucide="save" class="w-4 h-4 mr-1.5"></i>保存批单</button><button class="text-slate-600 hover:text-slate-800 text-sm">查看批改历史</button></div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 车险 · 保单查询（场景管理、筛选/字段设置、导出、批量更新/删除、表格导入、导入ID筛选、多保单逗号设置、车险添加非车） ================= -->
+                        <div v-if="activeMenu === 'car_policy_query'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保单查询】。支持新增/修改场景管理（筛选条件与列表展示字段可配置）；表格批量导入保单、车险保单导出（≤2000 条同步，&gt;2000 条异步通知下载）；批量更新保单数据、保单批量删除（已参与佣金结算不可删）；表格导入保单查询与删除、通过导入ID筛选保单、多个保单用逗号隔开查询设置；支持车险保单添加非车保单。</div>
+                            <div class="flex justify-between items-center">
+                                <h1 class="text-xl font-bold text-slate-800">保单查询</h1>
+                                <div class="flex flex-wrap gap-2"><button @click="showToast('打开筛选设置', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium">筛选设置</button><button @click="showToast('打开字段设置', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm font-medium">字段设置</button><button @click="showToast('导出任务已生成', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出</button><button @click="showToast('批量更新保单', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">批量更新</button><button @click="showToast('批量删除', 'info')" class="bg-white border border-red-200 hover:bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-sm">批量删除</button><button @click="showToast('表格批量导入保单', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">表格导入</button></div>
+                            </div>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3">
+                                <button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">全部</button>
+                                <button class="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">本月签单</button>
+                                <button class="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">即将到期</button>
+                                <button @click="showToast('新增/修改场景管理', 'info')" class="px-4 py-2 rounded-lg text-sm text-slate-400 border border-dashed border-slate-200 hover:border-slate-300">+ 新增场景</button>
+                            </div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-4">
+                                <div class="grid grid-cols-5 gap-3">
+                                    <select class="form-select text-sm"><option>签单日期</option><option>起保日期</option><option>止期</option></select>
+                                    <input type="date" class="form-input text-sm" />
+                                    <input type="date" class="form-input text-sm" />
+                                    <select class="form-select text-sm"><option value="">全部保险公司</option><option>人保财险</option><option>平安财险</option></select>
+                                    <button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button>
+                                </div>
+                                <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-500"><span>通过导入ID筛选：</span><input type="text" placeholder="导入批次ID" class="form-input text-sm w-36" /><span class="ml-4">多个保单用逗号隔开：</span><input type="text" placeholder="保单号1,保单号2,…" class="form-input text-sm w-48" /><button @click="showToast('车险保单添加非车保单', 'info')" class="text-blue-600 hover:underline ml-2">添加非车保单</button></div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <table class="w-full text-left whitespace-nowrap text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-4 py-3 font-medium w-8"><input type="checkbox" /></th><th class="px-4 py-3 font-medium">保险公司</th><th class="px-4 py-3 font-medium">保（批）单号</th><th class="px-4 py-3 font-medium">业务员</th><th class="px-4 py-3 font-medium">起保日期</th><th class="px-4 py-3 font-medium">保险止期</th><th class="px-4 py-3 font-medium">险种类型</th><th class="px-4 py-3 font-medium text-right">操作</th></tr></thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        <tr v-for="p in carPolicyList" :key="p.id" class="hover:bg-slate-50"><td class="px-4 py-3"><input type="checkbox" /></td><td class="px-4 py-3">{{ p.company }}</td><td class="px-4 py-3 font-mono">{{ p.policyNo }}</td><td class="px-4 py-3">{{ p.salesman }}</td><td class="px-4 py-3">{{ p.startDate }}</td><td class="px-4 py-3">{{ p.endDate }}</td><td class="px-4 py-3">{{ p.policyType }}</td><td class="px-4 py-3 text-right"><button @click="showToast('查看保单详情', 'info')" class="text-blue-600 hover:underline mr-2">查看</button><button @click="showToast('编辑保单', 'info')" class="text-blue-600 hover:underline mr-2">编辑</button><button @click="showToast('录入批单', 'info')" class="text-blue-600 hover:underline mr-2">录入批单</button><button @click="showToast('删除保单', 'info')" class="text-red-500 hover:underline">删除</button></td></tr>
+                                    </tbody>
+                                </table>
+                                <div class="bg-slate-50 px-4 py-3 border-t border-slate-200 flex justify-between items-center text-sm font-medium text-slate-700">
+                                    <span>合计：总保费 <strong class="text-blue-600">￥126,800.00</strong> · 净保费（交强） ￥18,200 · 净保费（商业） ￥98,600 · 车船税 ￥10,000 · 总件数 <strong>42</strong> 件</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 车险 · 保单数据（优保联：保单数据管理/导出与统计视图） ================= -->
+                        <div v-if="activeMenu === 'car_policy_data'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保单数据】。用于查看与管理保单数据视图，支持按条件筛选、导出完整版/简版数据；可与批量导入批次关联查看某批次的保单数据。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">保单数据</h1><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">车险 · 保单管理</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option value="">日期类型</option><option>签单日期</option><option>起保日期</option></select><input type="date" class="form-input text-sm" /><input type="date" class="form-input text-sm" /><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div><div class="mt-3"><button @click="showToast('导出保单数据', 'info')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">保险公司</th><th class="px-5 py-3 font-medium text-left">保单号</th><th class="px-5 py-3 font-medium text-left">车牌号</th><th class="px-5 py-3 font-medium text-left">起保/止期</th><th class="px-5 py-3 font-medium text-left">总保费</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody><tr><td colspan="6" class="px-5 py-12 text-center text-slate-400">暂无数据</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 未录入保单统计（优保联：未录入保单的统计与跟进） ================= -->
+                        <div v-if="activeMenu === 'car_unentered_stats'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【未录入保单统计】。统计尚未录入系统的保单数量与分布，支持按保司、时间、组织等维度查看，便于跟进录单完成率与遗漏排查。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">未录入保单统计</h1><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">车险 · 保单管理</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option value="">全部保险公司</option></select><input type="date" class="form-input text-sm" /><input type="date" class="form-input text-sm" /><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div></div>
+                            <div class="grid grid-cols-3 gap-4"><div class="bg-white p-6 rounded-xl border border-slate-200 text-center"><div class="text-2xl font-bold text-blue-600">0</div><div class="text-sm text-slate-500 mt-1">未录入件数</div></div><div class="bg-white p-6 rounded-xl border border-slate-200 text-center"><div class="text-2xl font-bold text-slate-700">—</div><div class="text-sm text-slate-500 mt-1">按保司分布</div></div><div class="bg-white p-6 rounded-xl border border-slate-200 text-center"><div class="text-2xl font-bold text-slate-700">—</div><div class="text-sm text-slate-500 mt-1">按组织分布</div></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">统计维度</th><th class="px-5 py-3 font-medium text-left">未录入数量</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody><tr><td colspan="3" class="px-5 py-12 text-center text-slate-400">暂无数据</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 保单设置（优保联 59-61：同步设置、保单设置、查询与列表设置） ================= -->
+                        <div v-if="activeMenu === 'car_policy_settings'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保单设置】。包含保单号格式规则（录入时前端正则校验）、同步设置（与保司对接的自动同步频率与范围）、查询与列表设置（个人自定义筛选条件与展示列，固定条件/列不可移除）。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">保单设置</h1><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">车险 · 保单管理</span></div>
+                            <div class="grid grid-cols-1 gap-6 max-w-3xl">
+                                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h3 class="text-sm font-semibold text-slate-700 mb-3">保单号格式规则</h3><p class="text-sm text-slate-500 mb-3">管理员可配置保单号格式正则，录入时前端做格式校验。</p><input type="text" placeholder="例如：^[A-Z0-9]{20,30}$" class="form-input text-sm w-full font-mono" /></div>
+                                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h3 class="text-sm font-semibold text-slate-700 mb-3">同步设置</h3><p class="text-sm text-slate-500 mb-3">与保司系统对接时的自动同步频率、同步范围（优保联 60）。</p><div class="space-y-3"><label class="flex items-center"><input type="checkbox" class="mr-2" /> 启用自动同步</label><select class="form-select text-sm w-48"><option>每日 02:00</option><option>每小时</option></select><input type="text" placeholder="同步范围（可选）" class="form-input text-sm w-full" /></div></div>
+                                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h3 class="text-sm font-semibold text-slate-700 mb-3">查询与列表设置</h3><p class="text-sm text-slate-500">个人自定义：在【保单查询】页点击「筛选设置」配置查询条件；点击列表右上角「字段设置」配置展示列。固定条件（日期类型、日期区间）及固定列（保单号、操作）不可移除。</p></div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 报价管理 · 报价查询 ================= -->
+                        <div v-if="activeMenu === 'car_quote_query'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【报价查询】。按车牌号/保单号、报价单号、保司、日期范围筛选车险报价记录；列表展示报价单号、车牌号、保司、总保费、创建时间，支持查看报价详情或分享记录。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">报价查询</h1><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-5 gap-3"><input type="text" placeholder="车牌号/保单号" class="form-input text-sm" /><input type="text" placeholder="报价单号" class="form-input text-sm" /><select class="form-select text-sm"><option value="">全部保司</option></select><input type="date" class="form-input text-sm" /><input type="date" class="form-input text-sm" /></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">报价单号</th><th class="px-5 py-3 font-medium text-left">车牌号</th><th class="px-5 py-3 font-medium text-left">保司</th><th class="px-5 py-3 font-medium text-left">总保费（元）</th><th class="px-5 py-3 font-medium text-left">创建时间</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-mono">QT20260307001</td><td class="px-5 py-3">京A12345</td><td class="px-5 py-3">人保财险</td><td class="px-5 py-3 font-medium">3,256.00</td><td class="px-5 py-3 text-slate-500">2026-03-07 09:20</td><td class="px-5 py-3 text-right"><button @click="showToast('查看报价详情', 'info')" class="text-blue-600 hover:underline">查看</button></td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 报价管理 · 报价风控（按图片：登录名/人员姓名、日期、机构、保司、状态；表头完整） ================= -->
+                        <div v-if="activeMenu === 'car_quote_risk'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【报价风控】。按登录名/人员姓名、日期、组织机构、保险公司、状态筛选业务员报价与出单数据；表格展示报价次数、出单次数、报价出单比、交强/交商同保等指标，支持导出；可对异常账号执行禁用/启用等风控操作。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">报价风控</h1><button @click="showToast('导出风控数据', 'success')" class="btn-primary">导出</button></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                                <div class="grid grid-cols-6 gap-3 mb-3"><input type="text" placeholder="请输入登录名/人员姓名" class="form-input text-sm" /><input type="date" class="form-input text-sm" /><input type="date" class="form-input text-sm" /><select class="form-select text-sm"><option value="">请选择组织机构</option></select></div>
+                                <div class="grid grid-cols-6 gap-3"><select class="form-select text-sm"><option value="">请选择保险公司</option></select><select class="form-select text-sm"><option value="">全部</option><option>正常</option><option>禁用</option></select><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+                                <table class="w-full text-sm min-w-[1000px]">
+                                    <thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-4 py-3 font-medium text-left whitespace-nowrap">登录名</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">业务员手机号</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">业务员姓名</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">业务员归属组织机构</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">报价次数</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">出单次数</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">报价出单比(%)</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">交强险次数</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">交商同保含损次数</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">交商同保不含损次数</th><th class="px-4 py-3 font-medium text-left whitespace-nowrap">状态</th><th class="px-4 py-3 font-medium text-right whitespace-nowrap">操作</th></tr></thead>
+                                    <tbody class="divide-y divide-slate-100"><tr><td colspan="12" class="px-5 py-12 text-center text-slate-400"><i data-lucide="database" class="w-12 h-12 mx-auto mb-2 text-slate-300"></i>暂无数据</td></tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- ================= 报价管理 · 报价配置（三 Tab：报价配置 / 保司排序 / 自定义报价单） ================= -->
+                        <div v-if="activeMenu === 'car_quote_config'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【报价配置】。投保出单与报价方案设置：Tab1 报价配置（业务员/手机号/政策匹配/续保来源等开关、报价方案管理）；Tab2 保司排序（拖动保司图标排序，影响报价展示顺序）；Tab3 自定义报价单（新增模板、包含内容、模板状态、发送设置）。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">报价配置</h1></div>
+                            <p class="text-sm text-slate-500">投保出单,报价方案设置</p>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div class="flex border-b border-slate-200 bg-slate-50">
+                                    <button v-for="t in quoteConfigTabs" :key="t.id" @click="quoteConfigTab = t.id" class="px-6 py-3.5 text-sm font-medium transition-colors border-b-2 relative top-[1px]" :class="quoteConfigTab === t.id ? 'border-blue-600 text-blue-600 bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'">{{ t.name }}</button>
+                                </div>
+                                <div class="p-6">
+                                    <div v-if="quoteConfigTab === 'config'" class="max-w-3xl space-y-6">
+                                        <div><h3 class="text-sm font-semibold text-slate-700 mb-3">投保出单设置</h3><div class="grid grid-cols-2 gap-4 text-sm"><div class="flex items-center justify-between py-2 border-b border-slate-100"><span class="text-slate-600">业务员 <i data-lucide="info" class="w-4 h-4 inline text-slate-400"></i></span><div><label class="mr-4"><input type="radio" name="salesman_req" class="mr-1" /> 必填</label><label><input type="radio" name="salesman_req" checked class="mr-1" /> 非必填</label></div></div><div class="flex items-center justify-between py-2 border-b border-slate-100"><span class="text-slate-600">手机号 <i data-lucide="info" class="w-4 h-4 inline text-slate-400"></i></span><div><label class="mr-4"><input type="radio" name="phone_def" class="mr-1" /> 默认</label><label><input type="radio" name="phone_def" checked class="mr-1" /> 不默认</label></div></div><div class="flex items-center justify-between py-2 border-b border-slate-100"><span class="text-slate-600">政策匹配 <i data-lucide="info" class="w-4 h-4 inline text-slate-400"></i></span><div><label class="mr-4"><input type="radio" name="policy_match" checked class="mr-1" /> 关闭</label><label><input type="radio" name="policy_match" class="mr-1" /> 开启</label></div></div><div class="flex items-start justify-between py-2 border-b border-slate-100"><span class="text-slate-600">续保来源 <i data-lucide="info" class="w-4 h-4 inline text-slate-400"></i></span><div><label class="block"><input type="checkbox" checked class="mr-1" /> 保司续保</label><label class="block"><input type="checkbox" checked class="mr-1" /> 保单</label><label class="block"><input type="checkbox" class="mr-1" /> 报价单</label></div></div><div class="flex items-center justify-between py-2 border-b border-slate-100"><span class="text-slate-600">固定电话默认</span><input type="text" placeholder="请输入固定电话" class="form-input text-sm w-48" /></div><div class="flex items-center justify-between py-2 border-b border-slate-100"><span class="text-slate-600">业务归属 <i data-lucide="info" class="w-4 h-4 inline text-slate-400"></i></span><div><label class="mr-4"><input type="radio" name="biz_owner" checked class="mr-1" /> 出单员</label><label><input type="radio" name="biz_owner" class="mr-1" /> 业务员</label></div></div></div></div>
+                                        <div><h3 class="text-sm font-semibold text-slate-700 mb-3">报价方案管理</h3><div class="space-y-2 text-sm"><label class="flex items-center"><input type="checkbox" class="mr-2" /> 批量报价时,如果续保成功优先按上年投保方案报价</label><label class="flex items-center"><input type="checkbox" class="mr-2" /> 交强险</label><label class="flex items-center"><input type="checkbox" class="mr-2" /> 商业险</label></div></div>
+                                        <button @click="showToast('报价配置已保存', 'success')" class="btn-primary">确定保存</button>
+                                    </div>
+                                    <div v-if="quoteConfigTab === 'sort'" class="space-y-4">
+                                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-800 flex items-center justify-between">拖动保司图标可进行排序 (排序规则：按照从左到右依次进行排序) <button @click="showToast('保司排序已保存', 'success')" class="btn-primary shrink-0 ml-4">保存排序</button></div>
+                                        <div class="flex flex-wrap gap-4 p-4 border border-slate-200 rounded-lg">
+                                            <div class="w-24 h-14 bg-orange-100 border border-orange-200 rounded flex items-center justify-center text-xs font-medium text-orange-800">平安</div>
+                                            <div class="w-24 h-14 bg-red-100 border border-red-200 rounded flex items-center justify-center text-xs font-medium text-red-800">人保</div>
+                                            <div class="w-24 h-14 bg-green-100 border border-green-200 rounded flex items-center justify-center text-xs font-medium text-green-800">太平</div>
+                                            <div class="w-24 h-14 bg-blue-100 border border-blue-200 rounded flex items-center justify-center text-xs font-medium text-blue-800">华安</div>
+                                            <div class="w-24 h-14 bg-slate-100 border border-slate-200 rounded flex items-center justify-center text-xs font-medium text-slate-700">鼎和财产</div>
+                                            <div class="w-24 h-14 bg-indigo-100 border border-indigo-200 rounded flex items-center justify-center text-xs font-medium text-indigo-800">太平洋</div>
+                                        </div>
+                                    </div>
+                                    <div v-if="quoteConfigTab === 'custom'" class="max-w-2xl space-y-4">
+                                        <button @click="showToast('新增报价单模板', 'info')" class="btn-primary"><i data-lucide="plus" class="w-4 h-4 mr-1.5"></i>新增模板</button>
+                                        <div class="border border-slate-200 rounded-lg p-5 space-y-4">
+                                            <div><label class="block text-sm font-medium text-slate-600 mb-1">模板名称 <span class="text-red-500">*</span></label><input type="text" placeholder="请输入模板名称" class="form-input text-sm w-full" /></div>
+                                            <div><label class="block text-sm font-medium text-slate-600 mb-1">包含内容 <i data-lucide="info" class="w-4 h-4 inline text-slate-400"></i></label><div class="flex gap-6 mt-1"><label><input type="radio" name="content_type" class="mr-1" /> 图片报价单</label><label><input type="radio" name="content_type" class="mr-1" /> 文字报价单</label></div></div>
+                                            <div><label class="block text-sm font-medium text-slate-600 mb-1">模板状态</label><div class="flex gap-6 mt-1"><label><input type="radio" name="tpl_status" checked class="mr-1" /> 启用</label><label><input type="radio" name="tpl_status" class="mr-1" /> 停用</label></div></div>
+                                            <div><label class="flex items-center"><input type="checkbox" checked class="mr-2" /> 发送设置：默认</label></div>
+                                            <div class="flex gap-3"><button @click="showToast('已重置', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm">重置</button><button @click="showToast('模板已保存', 'success')" class="btn-primary">保存</button></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 报价管理 · 保司工号（按图片：新增/融合/工号登录；全部/正常/禁用；完整筛选与表格） ================= -->
+                        <div v-if="activeMenu === 'car_insurer_code'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保司工号】。管理各保险公司的出单工号：工号(登录名)、配置名称、描述、所属地区、状态、出单平台锁定状态、关联委托代理协议等；支持新增工号、融合工号、工号登录、按保司/工号/省份/城市等筛选、批量启用/禁用；操作列支持复制、编辑、查看、日志。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">保司工号</h1><div class="flex gap-2"><button @click="showToast('新增工号', 'info')" class="btn-primary">新增工号</button><button @click="showToast('融合工号', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">融合工号</button><button @click="showToast('工号登录', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium">工号登录</button></div></div>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3"><button @click="showToast('筛选：全部', 'info')" class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white border-b-2 border-blue-600">全部</button><button @click="showToast('筛选：正常', 'info')" class="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">正常</button><button @click="showToast('筛选：禁用', 'info')" class="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">禁用</button></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                                <div class="grid grid-cols-5 gap-3 mb-3"><select class="form-select text-sm"><option value="">请选择保险公司</option></select><input type="text" placeholder="请输入工号" class="form-input text-sm" /><input type="text" placeholder="请输入配置名称" class="form-input text-sm" /><select class="form-select text-sm"><option value="">请选择省份</option></select><select class="form-select text-sm"><option value="">请选择城市</option></select></div>
+                                <div class="grid grid-cols-5 gap-3 mb-3"><input type="text" placeholder="请输入工号描述" class="form-input text-sm" /><input type="text" placeholder="请输入协议签订部门" class="form-input text-sm" /><select class="form-select text-sm"><option value="">开通直连报价</option></select><input type="text" placeholder="请输入机构名称" class="form-input text-sm" /><select class="form-select text-sm"><option value="">请选择工号范围</option></select></div>
+                                <div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option value="">请选择归属机构</option></select><select class="form-select text-sm"><option value="">请选择来源</option></select><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div>
+                            </div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+                                <table class="w-full text-sm min-w-[1100px]"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-4 py-3 w-8"><input type="checkbox" /></th><th class="px-4 py-3 font-medium text-left">保险公司</th><th class="px-4 py-3 font-medium text-left">工号(登录名)</th><th class="px-4 py-3 font-medium text-left">配置名称</th><th class="px-4 py-3 font-medium text-left">描述</th><th class="px-4 py-3 font-medium text-left">所属地区</th><th class="px-4 py-3 font-medium text-left">状态</th><th class="px-4 py-3 font-medium text-left">出单平台锁定登录状态</th><th class="px-4 py-3 font-medium text-left">关联委托代理协议</th><th class="px-4 py-3 font-medium text-left">委托代理协议状态</th><th class="px-4 py-3 font-medium text-left">协议签订部门</th><th class="px-4 py-3 font-medium text-right">操作</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-4 py-3"><input type="checkbox" /></td><td class="px-4 py-3">人保</td><td class="px-4 py-3 font-mono">A410105143</td><td class="px-4 py-3">—</td><td class="px-4 py-3">—</td><td class="px-4 py-3">河南省/郑州市/...</td><td class="px-4 py-3 text-green-600">有效</td><td class="px-4 py-3">有效</td><td class="px-4 py-3">—</td><td class="px-4 py-3">—</td><td class="px-4 py-3">—</td><td class="px-4 py-3 text-right"><span @click="showToast('复制工号', 'info')" class="text-blue-600 hover:underline cursor-pointer mr-2">复制</span><span @click="showToast('编辑工号', 'info')" class="text-blue-600 hover:underline cursor-pointer mr-2">编辑</span><span @click="showToast('查看工号', 'info')" class="text-blue-600 hover:underline cursor-pointer mr-2">查看</span><span @click="showToast('工号日志', 'info')" class="text-blue-600 hover:underline cursor-pointer">日志</span></td></tr><tr class="hover:bg-slate-50"><td class="px-4 py-3"><input type="checkbox" /></td><td class="px-4 py-3">平安</td><td class="px-4 py-3 font-mono">PAJZ001</td><td class="px-4 py-3">—</td><td class="px-4 py-3">平安商丘</td><td class="px-4 py-3">河南省/商丘市/...</td><td class="px-4 py-3 text-red-600">禁用</td><td class="px-4 py-3">有效</td><td class="px-4 py-3">—</td><td class="px-4 py-3">—</td><td class="px-4 py-3">—</td><td class="px-4 py-3 text-right"><span @click="showToast('复制工号', 'info')" class="text-blue-600 hover:underline cursor-pointer mr-2">复制</span><span @click="showToast('编辑工号', 'info')" class="text-blue-600 hover:underline cursor-pointer mr-2">编辑</span><span @click="showToast('查看工号', 'info')" class="text-blue-600 hover:underline cursor-pointer mr-2">查看</span><span @click="showToast('工号日志', 'info')" class="text-blue-600 hover:underline cursor-pointer">日志</span></td></tr></tbody></table>
+                                <div class="px-4 py-3 border-t border-slate-200 flex justify-between items-center text-sm text-slate-600"><span>已选择本页 0 条</span><div class="flex gap-2"><button @click="showToast('批量禁用工号', 'info')" class="px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">禁用</button><button @click="showToast('批量启用工号', 'info')" class="px-3 py-1.5 border border-slate-300 rounded hover:bg-slate-50">启用</button></div></div>
+                                <div class="px-4 py-2 bg-slate-50 border-t border-slate-100 flex justify-between items-center text-sm"><span class="text-slate-500">共 129 条</span><div class="flex items-center gap-2"><span class="text-slate-500">10 条/页</span><button class="px-2 py-1 rounded bg-blue-600 text-white text-xs">1</button><button class="px-2 py-1 rounded border border-slate-200 hover:bg-slate-50 text-xs">2</button><button class="px-2 py-1 rounded border border-slate-200 hover:bg-slate-50 text-xs">3</button><span class="text-slate-400">...</span><button class="px-2 py-1 rounded border border-slate-200 hover:bg-slate-50 text-xs">13</button><input type="text" class="w-12 px-1 py-0.5 border border-slate-200 rounded text-center text-xs" value="1" /><span class="text-slate-500">页</span><button class="px-2 py-1 border border-slate-200 rounded text-xs">前往</button></div></div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 车险 · 政策管理（优保联 62-70，按截图顺序与手册补全） ================= -->
+                        <!-- 保险政策：管理保险政策批次，按批次新增时间排序，支持创建/查看/复制/申请编辑/停用/删除 -->
+                        <div v-if="activeMenu === 'car_insurance_policy'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保险政策】管理，默认按批次新增时间排序。可搜索批次名称/ID/客商信息，按政策类型、工号区域、保险公司筛选；支持创建政策批次，列表中可对每条政策进行查看、复制、申请编辑、停用或删除（停用后可删除）。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">保险政策</h1><span class="text-xs text-slate-500">保险政策，默认按批次新增时间排序</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="flex gap-3 mb-4"><input type="text" placeholder="输入批次名称ID/客商信息" class="form-input text-sm flex-1" /><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button><button @click="showToast('打开创建政策批次', 'info')" class="btn-primary">创建政策批次</button></div><div class="flex flex-wrap gap-2 mb-2"><span class="text-slate-500 text-xs">政策类型：</span><button class="px-3 py-1.5 rounded text-sm font-medium bg-blue-600 text-white">不限</button><button class="px-3 py-1.5 rounded text-sm bg-white border border-slate-200 hover:bg-slate-50">基础政策</button><button class="px-3 py-1.5 rounded text-sm bg-white border border-slate-200 hover:bg-slate-50">附加政策</button><button class="px-3 py-1.5 rounded text-sm bg-white border border-slate-200 hover:bg-slate-50">非车批次</button><button class="px-3 py-1.5 rounded text-sm bg-white border border-slate-200 hover:bg-slate-50">预核保批次</button></div><div class="flex flex-wrap gap-2 mb-2"><span class="text-slate-500 text-xs">工号区域：</span><button class="px-3 py-1.5 rounded text-sm bg-blue-600 text-white">全部</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">郑州市</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">洛阳市</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">南阳市</button></div><div class="flex flex-wrap gap-2"><span class="text-slate-500 text-xs">保险公司：</span><button class="px-3 py-1.5 rounded text-sm bg-blue-600 text-white">全部</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">人保</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">鼎和财产</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">政策信息</th><th class="px-5 py-3 font-medium text-left">保险公司</th><th class="px-5 py-3 font-medium text-left">有效期</th><th class="px-5 py-3 font-medium text-left">适用工号</th><th class="px-5 py-3 font-medium text-left">政策状态</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3"><div class="font-medium">10月 新</div><div class="text-xs text-slate-500">2025-11-03 16:40:01 · 周卉</div></td><td class="px-5 py-3">鼎和财产</td><td class="px-5 py-3 text-xs">2025-06-01 至 2025-09-30</td><td class="px-5 py-3 text-xs">鼎和财产-5000001083(鼎和未来路++)</td><td class="px-5 py-3"><span class="text-green-600 text-xs">生效中</span></td><td class="px-5 py-3 text-right"><button @click="showToast('查看政策详情', 'info')" class="text-blue-600 hover:underline mr-2">查看</button><button @click="showToast('已复制政策批次', 'success')" class="text-blue-600 hover:underline mr-2">复制</button><button @click="showToast('申请编辑已提交', 'info')" class="text-blue-600 hover:underline mr-2">申请编辑</button><button @click="showToast('已停用', 'info')" class="text-red-500 hover:underline">停用</button></td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3"><div class="font-medium">4月 新</div><div class="text-xs text-slate-500">2025-05-13 09:41:16 · 周吾</div></td><td class="px-5 py-3">鼎和财产</td><td class="px-5 py-3 text-xs">2025-03-01 至 2025-05-31</td><td class="px-5 py-3 text-xs">鼎和财产-5000001093</td><td class="px-5 py-3"><span class="text-red-600 text-xs">已过期</span></td><td class="px-5 py-3 text-right"><button @click="showToast('查看政策详情', 'info')" class="text-blue-600 hover:underline mr-2">查看</button><button @click="showToast('已复制政策批次', 'success')" class="text-blue-600 hover:underline mr-2">复制</button><button @click="showToast('申请编辑已提交', 'info')" class="text-blue-600 hover:underline mr-2">申请编辑</button><button @click="showToast('已停用', 'info')" class="text-red-500 hover:underline">停用</button></td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3"><div class="font-medium">鼎和 新</div><div class="text-xs text-slate-500">2024-09-02 14:21:49 · 周卉</div></td><td class="px-5 py-3">鼎和财产</td><td class="px-5 py-3 text-xs">长期</td><td class="px-5 py-3 text-xs">鼎和财产-5000000891</td><td class="px-5 py-3"><span class="text-red-600 text-xs">停用</span></td><td class="px-5 py-3 text-right"><button @click="showToast('查看政策详情', 'info')" class="text-blue-600 hover:underline mr-2">查看</button><button @click="showToast('已删除', 'success')" class="text-red-500 hover:underline mr-2">删除</button><button @click="showToast('已复制政策批次', 'success')" class="text-blue-600 hover:underline">复制</button></td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- 留点设置：为组织机构设置留点，支持总部统一设置或机构负责人自主设置，需先设置负责人；审批通过后生效 -->
+                        <div v-if="activeMenu === 'car_retention'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【留点设置】。该商户开启留点后，可为需要留点的组织设置负责人；选择组织机构与点位设置方式（总部统一设置 / 机构负责人自主设置），右键编辑勾选限制条件、设置点位，保存并提交审核，审批通过即生效。留点设置与下游留点二选一。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">留点设置</h1><button @click="showRetentionModal = true" class="btn-primary">设置留点</button></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option value="">请选择组织机构</option></select><select class="form-select text-sm"><option value="">请选择负责人</option></select><select class="form-select text-sm"><option value="">请选择审批状态</option></select><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">序号</th><th class="px-5 py-3 font-medium text-left">组织机构</th><th class="px-5 py-3 font-medium text-left">点位设置方式</th><th class="px-5 py-3 font-medium text-left">创建人</th><th class="px-5 py-3 font-medium text-left">最新更新时间</th><th class="px-5 py-3 font-medium text-left">更新人</th><th class="px-5 py-3 font-medium text-left">审批状态</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody><tr><td colspan="8" class="px-5 py-12 text-center text-slate-400"><i data-lucide="database" class="w-12 h-12 mx-auto mb-2 text-slate-300"></i>暂无数据</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- 跟单政策：管理跟单政策批次，按批次新增时间排序，支持创建跟单批次及查看/复制/申请编辑/停用/启用/删除 -->
+                        <div v-if="activeMenu === 'car_follow_policy'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【跟单政策】管理，默认按批次新增时间排序。可搜索批次名称/政策ID/政策信息，按政策类型、工号区域、保险公司筛选；支持创建跟单批次，列表操作与保险政策类似（查看、复制、申请编辑、停用；停用后可删除或启用）。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">跟单政策</h1><span class="text-xs text-slate-500">默认按批次新增时间排序</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="flex gap-3 mb-4"><input type="text" placeholder="输入批次名称/政策ID/政策信息" class="form-input text-sm flex-1" /><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button><button @click="showToast('打开创建跟单批次', 'info')" class="btn-primary">创建跟单批次</button></div><div class="flex flex-wrap gap-2 mb-2"><span class="text-slate-500 text-xs">政策类型：</span><button class="px-3 py-1.5 rounded text-sm font-medium bg-blue-600 text-white">不限</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">基础政策</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">非车批次</button></div><div class="flex flex-wrap gap-2 mb-2"><span class="text-slate-500 text-xs">工号区域：</span><button class="px-3 py-1.5 rounded text-sm bg-blue-600 text-white">全部</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">郑州市</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">洛阳市</button></div><div class="flex flex-wrap gap-2"><span class="text-slate-500 text-xs">保险公司：</span><button class="px-3 py-1.5 rounded text-sm bg-blue-600 text-white">全部</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">人保</button><button class="px-3 py-1.5 rounded text-sm border border-slate-200 hover:bg-slate-50">鼎和财产</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">政策信息</th><th class="px-5 py-3 font-medium text-left">保险公司</th><th class="px-5 py-3 font-medium text-left">有效期</th><th class="px-5 py-3 font-medium text-left">适用工号</th><th class="px-5 py-3 font-medium text-left">生效状态</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3"><div class="font-medium">6月 新</div><div class="text-xs text-slate-500">2025-08-06 09:54:22 · 周卉</div></td><td class="px-5 py-3">鼎和财产</td><td class="px-5 py-3 text-xs">2025-06-01 至 长期</td><td class="px-5 py-3 text-xs">鼎和财产-5000001093(限和未来路++)</td><td class="px-5 py-3"><span class="text-green-600 text-xs">生效中</span></td><td class="px-5 py-3 text-right"><button @click="showToast('查看跟单政策详情', 'info')" class="text-blue-600 hover:underline mr-2">查看</button><button @click="showToast('已复制跟单批次', 'success')" class="text-blue-600 hover:underline mr-2">复制</button><button @click="showToast('申请编辑已提交', 'info')" class="text-blue-600 hover:underline mr-2">申请编辑</button><button @click="showToast('已停用', 'info')" class="text-red-500 hover:underline">停用</button></td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3"><div class="font-medium">鼎和 新</div><div class="text-xs text-slate-500">2024-09-02 14:21:49 · 周卉</div></td><td class="px-5 py-3">鼎和财产</td><td class="px-5 py-3 text-xs">长期</td><td class="px-5 py-3 text-xs">鼎和财产-5000000891</td><td class="px-5 py-3"><span class="text-slate-500 text-xs">停用</span></td><td class="px-5 py-3 text-right"><button @click="showToast('查看跟单政策详情', 'info')" class="text-blue-600 hover:underline mr-2">查看</button><button @click="showToast('已删除', 'success')" class="text-red-500 hover:underline mr-2">删除</button><button @click="showToast('已启用', 'success')" class="text-green-600 hover:underline">启用</button></td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- 区域奖励政策：按新增时间排序，支持按保险公司/工号/状态/备注筛选，新增区域奖励政策 -->
+                        <div v-if="activeMenu === 'car_region_reward'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【区域奖励政策】列表，默认按新增时间排序。可按保险公司、工号、状态、备注筛选；点击「新增」创建新的区域奖励政策。表格展示政策ID、备注、保险公司、工号、手续费比例、生效/结束日期、状态、更新时间及操作。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">区域奖励政策</h1><span class="text-xs text-slate-500">区域奖励政策列表，默认按新增时间排序</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-5 gap-3"><select class="form-select text-sm"><option value="">请选择保险公司</option></select><select class="form-select text-sm"><option value="">请选择工号</option></select><select class="form-select text-sm"><option value="">状态（共2项被选中）</option></select><input type="text" placeholder="备注" class="form-input text-sm" /><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button></div><div class="mt-3"><button @click="showToast('打开新增区域奖励政策', 'info')" class="btn-primary"><i data-lucide="plus" class="w-4 h-4 mr-1"></i>新增</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">政策ID</th><th class="px-5 py-3 font-medium text-left">备注</th><th class="px-5 py-3 font-medium text-left">保险公司</th><th class="px-5 py-3 font-medium text-left">工号</th><th class="px-5 py-3 font-medium text-left">手续费比例</th><th class="px-5 py-3 font-medium text-left">生效日期</th><th class="px-5 py-3 font-medium text-left">结束日期</th><th class="px-5 py-3 font-medium text-left">状态</th><th class="px-5 py-3 font-medium text-left">更新时间</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody><tr><td colspan="10" class="px-5 py-12 text-center text-slate-400">暂无结果</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- 政策审批：按批次处理审批，待审核批次列表按新增时间排序，可查看/通过/驳回 -->
+                        <div v-if="activeMenu === 'car_policy_approval'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【政策审批】。政策的审批按批次处理，以下为待审核批次列表，默认按新增时间排序。可对每条待审批次进行查看、审批通过或驳回操作。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">政策审批</h1><button @click="showToast('政策审批设置', 'info')" class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"><i data-lucide="settings" class="w-5 h-5"></i></button></div>
+                            <p class="text-sm text-slate-500">政策的审批是按批次处理的，以下是待审核批次列表，默认按新增时间排序</p>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3"><button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white border-b-2 border-blue-600">全部</button></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">工号</th><th class="px-5 py-3 font-medium text-left">批次号</th><th class="px-5 py-3 font-medium text-left">生效日期</th><th class="px-5 py-3 font-medium text-left">结束日期</th><th class="px-5 py-3 font-medium text-left">状态</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody><tr><td colspan="6" class="px-5 py-12 text-center text-slate-400"><i data-lucide="database" class="w-12 h-12 mx-auto mb-2 text-slate-300"></i>暂无数据</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- 数字营销方案：通用方案/指定保司/增员方案，支持新增方案（奖金总额、每日预算、权重设置：组织机构/保险公司/投保方式） -->
+                        <div v-if="activeMenu === 'car_digital_marketing'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【数字营销方案】。含通用方案、指定保司、增员方案等 Tab；可创建新方案，设置奖金总额、每日预算，以及组织机构/保险公司/投保方式的权重（未设置权重时默认按权重1即约2.5%发放）。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">数字营销方案</h1><button @click="showToast('数字营销方案设置', 'info')" class="p-2 text-slate-500 hover:bg-slate-100 rounded-lg"><i data-lucide="settings" class="w-5 h-5"></i></button></div>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3"><button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white border-b-2 border-blue-600">通用方案</button><button class="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">指定保司</button><button class="px-4 py-2 rounded-lg text-sm font-medium bg-white border border-slate-200 text-slate-600 hover:bg-slate-50">增员方案</button><span class="px-4 py-2 text-sm text-slate-500 flex items-center"><i data-lucide="wallet" class="w-4 h-4 mr-1"></i>账户余额 0元</span></div>
+                            <div class="bg-white rounded-xl border-2 border-dashed border-slate-200 rounded-lg flex flex-col items-center justify-center py-20 text-slate-400"><i data-lucide="file-plus" class="w-16 h-16 mb-3 text-slate-300"></i><p class="text-sm">暂无通用方案，<button @click="showDigitalPlanModal = true" class="text-blue-600 hover:underline">点此快速创建&gt;&gt;</button></p></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 分支机构业绩报表 ================= -->
+                        <div v-if="activeMenu === 'car_report_branch_perf'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页用于查询和管理分支机构的业绩报表，支持按日期类型、查询类型（月度/年度等）、分支机构、保险公司、年份、月份、工号、机构类型筛选；可切换「分支机构业绩报表」与「分支机构部门业绩汇总」两种视图；支持导出统计或导出明细，导出数据默认按成分量倒序。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">分支机构业绩报表</h1><span class="text-xs text-slate-500">导出数据默认按成分量倒序</span></div>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3"><button @click="branchPerfTab = 'branch'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="branchPerfTab === 'branch' ? 'bg-blue-600 text-white border-b-2 border-blue-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">分支机构业绩报表</button><button @click="branchPerfTab = 'dept'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="branchPerfTab === 'dept' ? 'bg-blue-600 text-white border-b-2 border-blue-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">分支机构部门业绩汇总</button></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3 mb-3"><select class="form-select text-sm"><option>支付日期</option><option>签单日期</option><option>起保日期</option></select><select class="form-select text-sm"><option>月度业绩</option><option>年度业绩</option><option>季度业绩</option></select><input type="text" placeholder="年份" class="form-input text-sm" value="2026" /><select class="form-select text-sm"><option value="">选择月度</option><option>1月</option><option>2月</option><option>3月</option></select></div><div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option value="">请选择</option><option>郑州分公司</option><option>洛阳分公司</option></select><select class="form-select text-sm"><option>不限</option><option>人保</option><option>平安</option></select><input type="text" placeholder="请选择工号" class="form-input text-sm" /><select class="form-select text-sm"><option>不限</option></select></div><div class="mt-3 flex justify-end gap-2"><button @click="showToast('查询成功', 'success')" class="btn-primary"><i data-lucide="search" class="w-4 h-4 mr-1"></i>查询</button><button @click="showToast('导出统计', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出统计</button><button @click="showToast('导出明细', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出明细</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">分支机构</th><th class="px-5 py-3 font-medium text-left">成单量</th><th class="px-5 py-3 font-medium text-left">总保费（元）</th><th class="px-5 py-3 font-medium text-left">手续费（元）</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">郑州未来路分公司</td><td class="px-5 py-3">128</td><td class="px-5 py-3">396,200</td><td class="px-5 py-3">31,696</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">洛阳分公司</td><td class="px-5 py-3">86</td><td class="px-5 py-3">266,800</td><td class="px-5 py-3">21,344</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 分支机构费用报表 ================= -->
+                        <div v-if="activeMenu === 'car_report_branch_expense'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页用于查询分支机构费用报表，按分支机构、日期类型、开始/结束日期筛选；展示各机构总单量、商业单/交强单、总保费/商业保费/交强保费、总车船税、机构费用；默认按机构费用倒序显示。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">分支机构费用报表</h1><span class="text-xs text-slate-500">默认按机构管费用负序显示</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-5 gap-3"><select class="form-select text-sm"><option value="">请选择</option><option>郑州未来路分公司</option><option>洛阳分公司</option></select><select class="form-select text-sm"><option>支付日期</option><option>签单日期</option></select><input type="date" class="form-input text-sm" value="2026-02-06" /><input type="date" class="form-input text-sm" value="2026-03-08" /><button @click="showToast('查询成功', 'success')" class="btn-primary"><i data-lucide="search" class="w-4 h-4 mr-1"></i>查询</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">机构名称</th><th class="px-5 py-3 font-medium text-left">总单量</th><th class="px-5 py-3 font-medium text-left">商业单</th><th class="px-5 py-3 font-medium text-left">交强单</th><th class="px-5 py-3 font-medium text-left">总保费</th><th class="px-5 py-3 font-medium text-left">商业保费</th><th class="px-5 py-3 font-medium text-left">交强保费</th><th class="px-5 py-3 font-medium text-left">总车船税</th><th class="px-5 py-3 font-medium text-left">机构费用</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">郑州未来路分公司</td><td class="px-5 py-3">320</td><td class="px-5 py-3">280</td><td class="px-5 py-3">320</td><td class="px-5 py-3">992,000</td><td class="px-5 py-3">868,000</td><td class="px-5 py-3">124,000</td><td class="px-5 py-3">38,200</td><td class="px-5 py-3 font-medium">79,360</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">洛阳分公司</td><td class="px-5 py-3">248</td><td class="px-5 py-3">218</td><td class="px-5 py-3">248</td><td class="px-5 py-3">768,800</td><td class="px-5 py-3">672,000</td><td class="px-5 py-3">96,800</td><td class="px-5 py-3">29,600</td><td class="px-5 py-3 font-medium">61,504</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 业务员业绩报表 ================= -->
+                        <div v-if="activeMenu === 'car_report_salesman_perf'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页用于查询业务员业绩报表，支持按日期类型、查询（月度/年度业绩）、年份、月份、业务员、机构类型、部门筛选；支持导出统计、导出明细，导出数据默认按成单量倒序。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">业务员业绩报表</h1><span class="text-xs text-slate-500">导出数据默认按成单量倒序</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3 mb-3"><select class="form-select text-sm"><option>支付日期</option><option>签单日期</option></select><select class="form-select text-sm"><option>月度业绩</option><option>年度业绩</option></select><select class="form-select text-sm"><option>2026年</option><option>2025年</option></select><select class="form-select text-sm"><option>3月</option><option>2月</option><option>1月</option></select></div><div class="grid grid-cols-4 gap-3"><input type="text" placeholder="请输入业务员" class="form-input text-sm" /><select class="form-select text-sm"><option>不限</option></select><select class="form-select text-sm"><option value="">请选择</option><option>总部直营</option><option>郑州分公司</option></select></div><div class="mt-3 flex justify-end gap-2"><button @click="showToast('查询成功', 'success')" class="btn-primary"><i data-lucide="search" class="w-4 h-4 mr-1"></i>查询</button><button @click="showToast('导出统计', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出统计</button><button @click="showToast('导出明细', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出明细</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">业务员</th><th class="px-5 py-3 font-medium text-left">部门</th><th class="px-5 py-3 font-medium text-left">成单量</th><th class="px-5 py-3 font-medium text-left">总保费（元）</th><th class="px-5 py-3 font-medium text-left">手续费（元）</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">张三</td><td class="px-5 py-3">总部直营</td><td class="px-5 py-3">92</td><td class="px-5 py-3">286,000</td><td class="px-5 py-3">22,880</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">李四</td><td class="px-5 py-3">郑州分公司</td><td class="px-5 py-3">78</td><td class="px-5 py-3">241,800</td><td class="px-5 py-3">19,344</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 出单员业绩报表 ================= -->
+                        <div v-if="activeMenu === 'car_report_issuer_perf'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页用于查询出单员业绩报表，支持按出单员、查询类型（月度业绩等）、年份、月份、日期类型、机构类型、部门筛选；支持导出统计、导出明细，导出数据默认按出单数量倒序。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">出单员业绩报表</h1><span class="text-xs text-slate-500">导出数据默认按出单数量倒序</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3 mb-3"><input type="text" placeholder="请输入出单员" class="form-input text-sm" /><select class="form-select text-sm"><option>月度业绩</option><option>年度业绩</option></select><select class="form-select text-sm"><option value="">年份</option><option>2026年</option></select><select class="form-select text-sm"><option value="">选择月度</option><option>3月</option><option>2月</option></select></div><div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option>支付日期</option><option>签单日期</option></select><select class="form-select text-sm"><option>不限</option></select><select class="form-select text-sm"><option value="">请选择</option><option>总部</option><option>郑州分公司</option></select></div><div class="mt-3 flex justify-end gap-2"><button @click="showToast('查询成功', 'success')" class="btn-primary"><i data-lucide="search" class="w-4 h-4 mr-1"></i>查询</button><button @click="showToast('导出统计', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出统计</button><button @click="showToast('导出明细', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出明细</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">出单员</th><th class="px-5 py-3 font-medium text-left">部门</th><th class="px-5 py-3 font-medium text-left">出单数量</th><th class="px-5 py-3 font-medium text-left">总保费（元）</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">王五</td><td class="px-5 py-3">出单中心</td><td class="px-5 py-3">156</td><td class="px-5 py-3">483,600</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">赵六</td><td class="px-5 py-3">郑州出单</td><td class="px-5 py-3">124</td><td class="px-5 py-3">384,400</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 日周月报表 ================= -->
+                        <div v-if="activeMenu === 'car_report_daily_weekly_monthly'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页用于查看日报、周报、月报，支持按机构类型、工号、业务部门、日期类型、年份、月份筛选；导出数据默认按单量排序；可切换日报/周报/月报三种报表视图。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">日周月报表</h1><span class="text-xs text-slate-500">导出数据默认按单量排序</span></div>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3"><button @click="dailyWeeklyMonthlyTab = 'daily'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="dailyWeeklyMonthlyTab === 'daily' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">日报</button><button @click="dailyWeeklyMonthlyTab = 'weekly'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="dailyWeeklyMonthlyTab === 'weekly' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">周报</button><button @click="dailyWeeklyMonthlyTab = 'monthly'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="dailyWeeklyMonthlyTab === 'monthly' ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">月报</button></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-3 gap-3 mb-3"><select class="form-select text-sm"><option value="">请选择</option><option>业务部门</option><option>分支机构</option></select><select class="form-select text-sm"><option value="">请选择</option></select><select class="form-select text-sm"><option value="">请选择</option></select></div><div class="grid grid-cols-3 gap-3"><select class="form-select text-sm"><option>支付日期</option><option>签单日期</option></select><select class="form-select text-sm"><option>2026年</option></select><select class="form-select text-sm"><option>3月</option><option>2月</option></select></div><div class="mt-3 flex justify-end gap-2"><button @click="showToast('查询成功', 'success')" class="btn-primary"><i data-lucide="search" class="w-4 h-4 mr-1"></i>查询</button><button @click="showToast('导出', 'success')" class="btn-primary"><i data-lucide="download" class="w-4 h-4 mr-1"></i>导出</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">日期/周期</th><th class="px-5 py-3 font-medium text-left">单量</th><th class="px-5 py-3 font-medium text-left">总保费（元）</th><th class="px-5 py-3 font-medium text-left">手续费（元）</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">第10周 (3.2-3.8)</td><td class="px-5 py-3">42</td><td class="px-5 py-3">130,200</td><td class="px-5 py-3">10,416</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">第9周 (2.24-3.1)</td><td class="px-5 py-3">38</td><td class="px-5 py-3">117,800</td><td class="px-5 py-3">9,424</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 业务员佣金汇总 ================= -->
+                        <div v-if="activeMenu === 'car_report_commission'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页用于汇总业务员佣金，支持按组织部门、收款人（业务员）、推荐人、开始时间与截止时间筛选；列表展示组织部门、收款人、推荐人、保费(含税)、应结跟单手续费、应结其他手续费、应结总计；默认按收款人应结跟单费用降序排列。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">业务员佣金汇总</h1><span class="text-xs text-slate-500">(默认按收款人应结跟单费用降序排列)</span></div>
+                            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-6 gap-3"><select class="form-select text-sm"><option value="">请选择</option><option>郑州未来路分公司</option><option>洛阳分公司</option></select><input type="text" placeholder="请输入业务员" class="form-input text-sm" /><input type="text" placeholder="请输入推荐人" class="form-input text-sm" /><input type="date" class="form-input text-sm" value="2026-03-01" /><input type="date" class="form-input text-sm" value="2026-03-08" /><button @click="showToast('查询成功', 'success')" class="btn-primary"><i data-lucide="search" class="w-4 h-4 mr-1"></i>查询</button></div></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">组织部门</th><th class="px-5 py-3 font-medium text-left">收款人</th><th class="px-5 py-3 font-medium text-left">推荐人</th><th class="px-5 py-3 font-medium text-left">保费(含税)</th><th class="px-5 py-3 font-medium text-left">应结跟单手续费</th><th class="px-5 py-3 font-medium text-left">应结其他手续费</th><th class="px-5 py-3 font-medium text-left">应结总计</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">河南洛安汽车保险代理有限公司郑州未来路分公司</td><td class="px-5 py-3">于宠朋</td><td class="px-5 py-3">—</td><td class="px-5 py-3">¥ 465,848.43</td><td class="px-5 py-3">¥ 21,551.37</td><td class="px-5 py-3">¥ 0.00</td><td class="px-5 py-3 font-medium">¥ 21,551.37</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">洛阳分公司</td><td class="px-5 py-3">李芳</td><td class="px-5 py-3">—</td><td class="px-5 py-3">¥ 328,600.00</td><td class="px-5 py-3">¥ 15,204.80</td><td class="px-5 py-3">¥ 0.00</td><td class="px-5 py-3 font-medium">¥ 15,204.80</td></tr></tbody></table></div>
+                            <div class="flex justify-end items-center gap-2 text-sm text-slate-500"><span>共 2 页</span><span>跳转到第</span><input type="number" value="1" class="form-input text-sm w-14 text-center" /><span>页</span><button @click="showToast('跳转', 'info')" class="px-3 py-1.5 border border-slate-200 rounded hover:bg-slate-50">确定</button></div>
+                        </div>
+
+                        <!-- ================= 车险 · 报表管理 · 监管报表（含监管/财务/业务三 Tab） ================= -->
+                        <div v-if="activeMenu === 'car_report_supervision'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【监管报表】。含三个主 Tab：监管报表（指跟单费用，含车险兼非车险的统计）、财务报表、业务报表。监管报表支持按保险公司、组织机构类型、组织机构、统计口径、佣金是否含税、税率、日期类型与日期范围筛选，可导出统计/导出明细、上传；财务报表与业务报表按年份/季度/月份筛选，支持查阅、导出。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">监管报表</h1><span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">车险 · 报表管理</span></div>
+                            <div class="flex gap-2 border-b border-slate-200 pb-3"><button @click="reportSupervisionTab = 'supervision'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="reportSupervisionTab === 'supervision' ? 'bg-blue-600 text-white border-b-2 border-blue-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">监管报表</button><button @click="reportSupervisionTab = 'financial'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="reportSupervisionTab === 'financial' ? 'bg-blue-600 text-white border-b-2 border-blue-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">财务报表</button><button @click="reportSupervisionTab = 'business'" class="px-4 py-2 rounded-lg text-sm font-medium" :class="reportSupervisionTab === 'business' ? 'bg-blue-600 text-white border-b-2 border-blue-600' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'">业务报表</button></div>
+                            <!-- 监管报表 Tab -->
+                            <div v-if="reportSupervisionTab === 'supervision'" class="space-y-4">
+                                <p class="text-sm text-slate-500">(指跟单费用，含车险兼车险的统计)</p>
+                                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3 mb-3"><select class="form-select text-sm"><option value="">请选择保险公司</option><option>人保</option><option>平安</option></select><select class="form-select text-sm"><option>业务部门</option><option>分支机构</option></select><select class="form-select text-sm"><option value="">请选择组织机构</option></select><select class="form-select text-sm"><option>总保费</option><option>净保费</option></select></div><div class="grid grid-cols-4 gap-3 mb-3"><select class="form-select text-sm"><option>不含税</option><option>含税</option></select><input type="text" placeholder="请输入税率" class="form-input text-sm w-24" />%<select class="form-select text-sm"><option>开票日期</option><option>支付日期</option></select><input type="text" placeholder="日期范围" class="form-input text-sm" value="2028-02-06 至 2028-03-08" /></div><div class="flex justify-end gap-2"><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button><button @click="showToast('导出统计', 'success')" class="btn-primary">导出统计</button><button @click="showToast('导出明细', 'success')" class="btn-primary">导出明细</button><button @click="showToast('上传', 'info')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm">上传</button></div></div>
+                                <p class="text-xs text-slate-500">单位: 万元</p>
+                                <div class="flex gap-2 mb-2"><button class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white">监管报表</button><button class="px-4 py-2 rounded-lg text-sm bg-white border border-slate-200 text-slate-600">任务列表</button></div>
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">保险</th><th class="px-5 py-3 font-medium text-left">保费金额</th><th class="px-5 py-3 font-medium text-left">代理佣金</th><th class="px-5 py-3 font-medium text-left">保费金额(自营)</th><th class="px-5 py-3 font-medium text-left">代理佣金(自营)</th><th class="px-5 py-3 font-medium text-left">保费金额(三方)</th><th class="px-5 py-3 font-medium text-left">代理佣金(三方)</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">车险</td><td class="px-5 py-3">125.60</td><td class="px-5 py-3">10.05</td><td class="px-5 py-3">98.20</td><td class="px-5 py-3">7.86</td><td class="px-5 py-3">27.40</td><td class="px-5 py-3">2.19</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">非车险</td><td class="px-5 py-3">32.80</td><td class="px-5 py-3">2.62</td><td class="px-5 py-3">28.00</td><td class="px-5 py-3">2.24</td><td class="px-5 py-3">4.80</td><td class="px-5 py-3">0.38</td></tr></tbody></table></div>
+                            </div>
+                            <!-- 财务报表 Tab -->
+                            <div v-if="reportSupervisionTab === 'financial'" class="space-y-4">
+                                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-5 gap-3"><select class="form-select text-sm"><option value="">请选择年份</option><option>2026年</option></select><select class="form-select text-sm"><option value="">请选择季度</option><option>Q1</option><option>Q2</option></select><select class="form-select text-sm"><option value="">请选择月份</option><option>3月</option><option>2月</option></select><select class="form-select text-sm"><option>不含税</option><option>含税</option></select><div class="flex gap-2"><button @click="showToast('查阅', 'success')" class="btn-primary">查阅</button><button @click="showToast('导出', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm">导出</button></div></div></div>
+                                <p class="text-xs text-slate-500">单位: 万元</p>
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm border-collapse"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-3 py-2 font-medium text-left border border-slate-200">项目</th><th class="px-3 py-2 font-medium text-left border border-slate-200">保险公司名称</th><th class="px-3 py-2 font-medium text-left border border-slate-200">行次</th><th colspan="3" class="px-3 py-2 font-medium text-center border border-slate-200">向保险公司收取的其他费用</th><th colspan="5" class="px-3 py-2 font-medium text-center border border-slate-200">是否存在套取费用的情况</th></tr><tr><th class="px-3 py-2 border border-slate-200"></th><th class="px-3 py-2 border border-slate-200"></th><th class="px-3 py-2 border border-slate-200"></th><th class="px-3 py-2 border border-slate-200">手续费及佣金/咨询费</th><th class="px-3 py-2 border border-slate-200">转账</th><th class="px-3 py-2 border border-slate-200">现金</th><th class="px-3 py-2 border border-slate-200">返还保险公司</th><th colspan="3" class="px-3 py-2 text-center border border-slate-200 text-xs">公司内部使用</th><th class="px-3 py-2 border border-slate-200">向被保险人外的其他单位或个人支付回扣或其他利益</th><th class="px-3 py-2 border border-slate-200">其他情况</th><th class="px-3 py-2 border border-slate-200">其他</th></tr></thead><tbody><tr><td colspan="11" class="px-5 py-12 text-center text-slate-400">暂无数据</td></tr></tbody></table></div>
+                            </div>
+                            <!-- 业务报表 Tab -->
+                            <div v-if="reportSupervisionTab === 'business'" class="space-y-4">
+                                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200"><div class="grid grid-cols-4 gap-3"><select class="form-select text-sm"><option value="">请选择年份</option><option>2026年</option></select><select class="form-select text-sm"><option value="">请选择季度</option></select><select class="form-select text-sm"><option value="">请选择月份</option><option>3月</option></select><div class="flex gap-2"><button @click="showToast('查询成功', 'success')" class="btn-primary">查询</button><button @click="showToast('导出', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm">导出</button></div></div></div>
+                                <p class="text-xs text-slate-500">单位: 万元、件</p>
+                                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto"><table class="w-full text-sm min-w-[900px]"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-3 py-2 font-medium text-left border border-slate-200">序号</th><th class="px-3 py-2 font-medium text-left border border-slate-200">保险公司名称</th><th colspan="4" class="px-3 py-2 text-center border border-slate-200">机动车辆保险-商业性</th><th colspan="4" class="px-3 py-2 text-center border border-slate-200">机动车辆保险-交强险</th><th colspan="4" class="px-3 py-2 text-center border border-slate-200">总计</th><th colspan="4" class="px-3 py-2 text-center border border-slate-200">其他</th></tr><tr><th class="px-3 py-2 border border-slate-200"></th><th class="px-3 py-2 border border-slate-200"></th><th class="px-3 py-2 border border-slate-200">保单件数</th><th class="px-3 py-2 border border-slate-200">保费金额</th><th class="px-3 py-2 border border-slate-200">手续费及佣金收入</th><th class="px-3 py-2 border border-slate-200">手续费及佣金率</th><th class="px-3 py-2 border border-slate-200">保单件数</th><th class="px-3 py-2 border border-slate-200">保费金额</th><th class="px-3 py-2 border border-slate-200">手续费及佣金收入</th><th class="px-3 py-2 border border-slate-200">手续费及佣金率</th><th class="px-3 py-2 border border-slate-200">保单件数</th><th class="px-3 py-2 border border-slate-200">保费金额</th><th class="px-3 py-2 border border-slate-200">手续费及佣金收入</th><th class="px-3 py-2 border border-slate-200">手续费及佣金率</th><th class="px-3 py-2 border border-slate-200">保单件数</th><th class="px-3 py-2 border border-slate-200">保费金额</th><th class="px-3 py-2 border border-slate-200">手续费及佣金收入</th><th class="px-3 py-2 border border-slate-200">手续费及佣金率</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-3 py-2 border border-slate-200">1</td><td class="px-3 py-2 border border-slate-200">人保财险</td><td class="px-3 py-2 border border-slate-200">320</td><td class="px-3 py-2 border border-slate-200">98.60</td><td class="px-3 py-2 border border-slate-200">7.89</td><td class="px-3 py-2 border border-slate-200">8%</td><td class="px-3 py-2 border border-slate-200">320</td><td class="px-3 py-2 border border-slate-200">62.60</td><td class="px-3 py-2 border border-slate-200">5.01</td><td class="px-3 py-2 border border-slate-200">8%</td><td class="px-3 py-2 border border-slate-200">640</td><td class="px-3 py-2 border border-slate-200">161.20</td><td class="px-3 py-2 border border-slate-200">12.90</td><td class="px-3 py-2 border border-slate-200">8%</td><td class="px-3 py-2 border border-slate-200">28</td><td class="px-3 py-2 border border-slate-200">8.20</td><td class="px-3 py-2 border border-slate-200">0.66</td><td class="px-3 py-2 border border-slate-200">8%</td></tr><tr class="hover:bg-slate-50"><td class="px-3 py-2 border border-slate-200">2</td><td class="px-3 py-2 border border-slate-200">平安财险</td><td class="px-3 py-2 border border-slate-200">268</td><td class="px-3 py-2 border border-slate-200">82.80</td><td class="px-3 py-2 border border-slate-200">6.62</td><td class="px-3 py-2 border border-slate-200">8%</td><td class="px-3 py-2 border border-slate-200">268</td><td class="px-3 py-2 border border-slate-200">52.40</td><td class="px-3 py-2 border border-slate-200">4.19</td><td class="px-3 py-2 border border-slate-200">8%</td><td class="px-3 py-2 border border-slate-200">536</td><td class="px-3 py-2 border border-slate-200">135.20</td><td class="px-3 py-2 border border-slate-200">10.81</td><td class="px-3 py-2 border border-slate-200">8%</td><td class="px-3 py-2 border border-slate-200">22</td><td class="px-3 py-2 border border-slate-200">6.50</td><td class="px-3 py-2 border border-slate-200">0.52</td><td class="px-3 py-2 border border-slate-200">8%</td></tr></tbody></table></div>
+                            </div>
+                        </div>
+
+                        <!-- ================= 车险 · 业务来源分析（优保联 73） ================= -->
+                        <div v-if="activeMenu === 'car_stats_source'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【业务来源分析】。按来源渠道（直销/转介绍/网销/电销）统计件数、保费、占比、环比、同比；支持按保司、业务员、组织机构下钻，导出数据。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">业务来源分析</h1><button @click="showToast('导出业务来源分析', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">来源渠道</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">占比</th><th class="px-5 py-3 font-medium text-left">环比</th><th class="px-5 py-3 font-medium text-left">同比</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">直销</td><td class="px-5 py-3">520</td><td class="px-5 py-3">1,608,000</td><td class="px-5 py-3">41.7%</td><td class="px-5 py-3 text-green-600">+5.2%</td><td class="px-5 py-3 text-green-600">+12.1%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">转介绍</td><td class="px-5 py-3">380</td><td class="px-5 py-3">1,176,200</td><td class="px-5 py-3">30.5%</td><td class="px-5 py-3">—</td><td class="px-5 py-3">—</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">网销</td><td class="px-5 py-3">248</td><td class="px-5 py-3">768,000</td><td class="px-5 py-3">19.9%</td><td class="px-5 py-3">—</td><td class="px-5 py-3">—</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">电销</td><td class="px-5 py-3">100</td><td class="px-5 py-3">304,000</td><td class="px-5 py-3">7.9%</td><td class="px-5 py-3">—</td><td class="px-5 py-3">—</td></tr></tbody></table></div>
+                            <p class="text-sm text-slate-500">支持按保险公司、业务员、组织机构下钻。</p>
+                        </div>
+
+                        <!-- ================= 车险 · 保险公司分析 ================= -->
+                        <div v-if="activeMenu === 'car_stats_company'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【保险公司分析】。按保司统计件数、保费、手续费；支持点击保司名称查看月度趋势下钻，导出数据。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">保险公司分析</h1><button @click="showToast('导出保险公司分析', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">保险公司</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">手续费（元）</th><th class="px-5 py-3 font-medium text-right">操作</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-medium"><button @click="showToast('查看人保财险下钻', 'info')" class="text-blue-600 hover:underline">人保财险</button></td><td class="px-5 py-3">520</td><td class="px-5 py-3">1,612,000</td><td class="px-5 py-3">128,960</td><td class="px-5 py-3 text-right"><button @click="showToast('查看月度趋势', 'info')" class="text-blue-600 hover:underline">月度趋势</button></td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-medium"><button @click="showToast('查看平安财险下钻', 'info')" class="text-blue-600 hover:underline">平安财险</button></td><td class="px-5 py-3">428</td><td class="px-5 py-3">1,326,800</td><td class="px-5 py-3">106,144</td><td class="px-5 py-3 text-right"><button @click="showToast('查看月度趋势', 'info')" class="text-blue-600 hover:underline">月度趋势</button></td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-medium"><button @click="showToast('查看太保财险下钻', 'info')" class="text-blue-600 hover:underline">太保财险</button></td><td class="px-5 py-3">300</td><td class="px-5 py-3">917,400</td><td class="px-5 py-3">73,392</td><td class="px-5 py-3 text-right"><button @click="showToast('查看月度趋势', 'info')" class="text-blue-600 hover:underline">月度趋势</button></td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 组织部门业绩分析 ================= -->
+                        <div v-if="activeMenu === 'car_stats_dept'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【组织部门业绩分析】。按组织/部门统计出单量、保费额、续保率等，支持导出。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">组织部门业绩分析</h1><button @click="showToast('导出组织部门业绩', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">部门/团队</th><th class="px-5 py-3 font-medium text-left">出单量</th><th class="px-5 py-3 font-medium text-left">保费额（元）</th><th class="px-5 py-3 font-medium text-left">续保率</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">总部直营</td><td class="px-5 py-3">320</td><td class="px-5 py-3">992,000</td><td class="px-5 py-3">68%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">广东分公司</td><td class="px-5 py-3">280</td><td class="px-5 py-3">868,000</td><td class="px-5 py-3">72%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">北京分公司</td><td class="px-5 py-3">248</td><td class="px-5 py-3">768,800</td><td class="px-5 py-3">65%</td></tr></tbody></table></div>
+                        </div>
+
+                        <!-- ================= 车险 · 业务员业绩分析（优保联 77） ================= -->
+                        <div v-if="activeMenu === 'car_stats_salesman'" class="space-y-6">
+                            <div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700"><strong>页面说明：</strong>本页为【业务员业绩分析】。按业务员统计排名、保费、件数、件均保费、续保率等，支持导出。</div>
+                            <div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">业务员业绩分析</h1><button @click="showToast('导出业务员业绩', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div>
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">排名</th><th class="px-5 py-3 font-medium text-left">业务员</th><th class="px-5 py-3 font-medium text-left">部门</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">件均保费</th><th class="px-5 py-3 font-medium text-left">续保率</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-bold text-amber-600">1</td><td class="px-5 py-3">张三</td><td class="px-5 py-3">总部直营</td><td class="px-5 py-3 font-medium">286,000</td><td class="px-5 py-3">92</td><td class="px-5 py-3">3,109</td><td class="px-5 py-3">71%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-bold text-slate-400">2</td><td class="px-5 py-3">李四</td><td class="px-5 py-3">广东分公司</td><td class="px-5 py-3 font-medium">252,000</td><td class="px-5 py-3">84</td><td class="px-5 py-3">3,000</td><td class="px-5 py-3">68%</td></tr></tbody></table></div>
+                        </div>
+                        <div v-if="activeMenu === 'car_stats_agent'" class="space-y-6"><div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700 mb-4"><strong>页面说明：</strong>本页为【工号数据分析】。按工号统计所属机构、出单量、保费，支持导出。</div><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">工号数据分析</h1><button @click="showToast('导出工号数据', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">工号</th><th class="px-5 py-3 font-medium text-left">所属机构</th><th class="px-5 py-3 font-medium text-left">出单量</th><th class="px-5 py-3 font-medium text-left">保费（元）</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3 font-mono">A000101</td><td class="px-5 py-3">总部</td><td class="px-5 py-3">320</td><td class="px-5 py-3">992,000</td></tr></tbody></table></div></div>
+                        <div v-if="activeMenu === 'car_stats_region'" class="space-y-6"><div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700 mb-4"><strong>页面说明：</strong>本页为【区域占比分析】。按区域统计件数、保费、占比，支持导出。</div><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">区域占比分析</h1><button @click="showToast('导出区域占比', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">区域</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">占比</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">华东</td><td class="px-5 py-3">420</td><td class="px-5 py-3">1,302,000</td><td class="px-5 py-3">33.7%</td></tr></tbody></table></div></div>
+                        <div v-if="activeMenu === 'car_stats_jiaoshang'" class="space-y-6"><div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700 mb-4"><strong>页面说明：</strong>本页为【交商占比分析】。交强险与商业险的件数、保费及占比，支持导出。</div><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">交商占比分析</h1><button @click="showToast('导出交商占比', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">类型</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">占比</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">交强险</td><td class="px-5 py-3">1,248</td><td class="px-5 py-3">685,200</td><td class="px-5 py-3">18%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">商业险</td><td class="px-5 py-3">1,248</td><td class="px-5 py-3">3,171,000</td><td class="px-5 py-3">82%</td></tr></tbody></table></div></div>
+                        <div v-if="activeMenu === 'car_stats_oldnew'" class="space-y-6"><div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700 mb-4"><strong>页面说明：</strong>本页为【新旧车占比分析】。新车与续保件数及占比，支持导出。</div><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">新旧车占比分析</h1><button @click="showToast('导出新旧车占比', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">类型</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">占比</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">新车</td><td class="px-5 py-3">437</td><td class="px-5 py-3">35%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">续保</td><td class="px-5 py-3">811</td><td class="px-5 py-3">65%</td></tr></tbody></table></div></div>
+                        <div v-if="activeMenu === 'car_stats_coverage'" class="space-y-6"><div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700 mb-4"><strong>页面说明：</strong>本页为【险种占比分析】。车损险、三者险等各险种件数、保费及占比，支持导出。</div><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">险种占比分析</h1><button @click="showToast('导出险种占比', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">险种</th><th class="px-5 py-3 font-medium text-left">件数</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">占比</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">车损险</td><td class="px-5 py-3">1,180</td><td class="px-5 py-3">1,200,000</td><td class="px-5 py-3">31%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">三者险</td><td class="px-5 py-3">1,248</td><td class="px-5 py-3">980,000</td><td class="px-5 py-3">25%</td></tr></tbody></table></div></div>
+                        <div v-if="activeMenu === 'car_stats_branch'" class="space-y-6"><div class="bg-blue-50/80 border border-blue-100 rounded-lg p-4 text-sm text-slate-700 mb-4"><strong>页面说明：</strong>本页为【分支机构分析】。各分支机构出单量、保费、续保率，支持导出。</div><div class="flex justify-between items-center"><h1 class="text-xl font-bold text-slate-800">分支机构分析</h1><button @click="showToast('导出分支机构分析', 'success')" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-sm">导出</button></div><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 border-b border-slate-200"><tr><th class="px-5 py-3 font-medium text-left">分支机构</th><th class="px-5 py-3 font-medium text-left">出单量</th><th class="px-5 py-3 font-medium text-left">保费（元）</th><th class="px-5 py-3 font-medium text-left">续保率</th></tr></thead><tbody class="divide-y divide-slate-100"><tr class="hover:bg-slate-50"><td class="px-5 py-3">总部直营</td><td class="px-5 py-3">320</td><td class="px-5 py-3">992,000</td><td class="px-5 py-3">68%</td></tr><tr class="hover:bg-slate-50"><td class="px-5 py-3">广东分公司</td><td class="px-5 py-3">280</td><td class="px-5 py-3">868,000</td><td class="px-5 py-3">72%</td></tr></tbody></table></div></div>
 
                     </div>
                 </transition>
@@ -775,6 +1208,67 @@
                             </div>
                             <span class="text-xs text-slate-500">{{ currentShareItem?.name || '未知产品' }} 专属投保码</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ================= 政策管理 · 设置留点 弹窗 ================= -->
+        <transition name="modal">
+            <div v-if="showRetentionModal" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showRetentionModal = false"></div>
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col overflow-hidden p-6">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-800">设置留点</h2>
+                        <button @click="showRetentionModal = false" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-slate-700">请选择要设置留点的组织机构</span>
+                                <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-9 h-5 bg-slate-200 peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div></label>
+                            </div>
+                            <div class="flex gap-2"><input type="text" placeholder="负责人或组织机构名称" class="form-input text-sm flex-1" /><button @click="showToast('查询组织机构', 'info')" class="btn-primary">查询</button></div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-medium text-slate-700 mb-2">请选择点位设置方式</div>
+                            <label class="flex items-center space-x-2 cursor-pointer mb-2"><input type="radio" name="retention_method" checked class="text-blue-600 focus:ring-blue-500"><span class="text-sm">总部统一设置</span></label>
+                            <label class="flex items-center space-x-2 cursor-pointer"><input type="radio" name="retention_method" class="text-blue-600 focus:ring-blue-500"><span class="text-sm">机构负责人自主设置</span></label>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-4">
+                        <button @click="showRetentionModal = false" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">取消</button>
+                        <button @click="showToast('留点设置已提交', 'success'); showRetentionModal = false" class="btn-primary">确定</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ================= 政策管理 · 数字营销方案 - 新增方案 弹窗 ================= -->
+        <transition name="modal">
+            <div v-if="showDigitalPlanModal" class="fixed inset-0 z-[80] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" @click="showDigitalPlanModal = false"></div>
+                <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg relative z-10 flex flex-col overflow-hidden p-6">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+                        <h2 class="text-lg font-bold text-slate-800">新增方案</h2>
+                        <button @click="showDigitalPlanModal = false" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-slate-600 mb-4">投放组织、保险公司、投保方式未设置权重时默认按权重1(即2.5%左右)发放</div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2"><label class="text-sm font-medium text-slate-700 w-24">奖金总额:</label><input type="number" step="0.01" value="0" class="form-input text-sm w-32" /><span class="text-sm text-slate-500">万元</span></div>
+                        <div class="flex items-center gap-2"><label class="text-sm font-medium text-slate-700 w-24">每日预算:</label><input type="number" placeholder="请输入每日预算" class="form-input text-sm w-40" /><span class="text-sm text-slate-500">元</span></div>
+                        <div>
+                            <div class="text-sm font-medium text-slate-700 mb-2">权重设置:</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2"><select class="form-select text-sm flex-1"><option value="">请选择组织机构</option></select><button class="px-3 py-1.5 text-sm border border-slate-200 rounded hover:bg-slate-50">默认</button><button class="px-3 py-1.5 text-sm border border-slate-200 rounded hover:bg-slate-50">添加</button></div>
+                                <div class="flex items-center gap-2"><select class="form-select text-sm flex-1"><option value="">请选择保险公司</option></select><button class="px-3 py-1.5 text-sm border border-slate-200 rounded hover:bg-slate-50">默认</button><button class="px-3 py-1.5 text-sm border border-slate-200 rounded hover:bg-slate-50">添加</button></div>
+                                <div class="flex items-center gap-2"><select class="form-select text-sm flex-1"><option value="">请选择投保方式</option></select><button class="px-3 py-1.5 text-sm border border-slate-200 rounded hover:bg-slate-50">默认</button><button class="px-3 py-1.5 text-sm border border-slate-200 rounded hover:bg-slate-50">添加</button></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-4">
+                        <button @click="showDigitalPlanModal = false" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">取消</button>
+                        <button @click="showToast('方案已创建', 'success'); showDigitalPlanModal = false" class="btn-primary">确定</button>
                     </div>
                 </div>
             </div>
@@ -2144,7 +2638,12 @@
         createApp({
             setup() {
                 // ================== 核心路由与菜单 ==================
-                const menus = [
+                // 一级折叠状态（产品管理、车险管理 点击可收起/放开）
+                const productExpanded = ref(true);
+                const carExpanded = ref(true);
+
+                // 产品管理：二级菜单（原扁平菜单全部归入此处）
+                const productMenus = [
                     { id: 'platform_products', name: '平台产品(产销对接)', icon: 'layout-grid' },
                     { id: 'agreement', name: '协议管理', icon: 'file-text' },
                     { id: 'mall_category', name: '商城分类', icon: 'shopping-bag' },
@@ -2155,9 +2654,121 @@
                     { id: 'life_products', name: '寿险产品管理', icon: 'heart-pulse' },
                     { id: 'questionnaire', name: '问卷模板引擎', icon: 'clipboard-list' },
                 ];
-                
+
+                // 车险管理：二级菜单顺序（报价管理 → 保单管理 → 政策管理 → 报表管理 → 统计分析），每组可收放
+                const carMenuGroups = [
+                    {
+                        id: 'quote',
+                        name: '报价管理',
+                        children: [
+                            { id: 'car_quote_query', name: '报价查询' },
+                            { id: 'car_quote_risk', name: '报价风控' },
+                            { id: 'car_quote_config', name: '报价配置' },
+                            { id: 'car_insurer_code', name: '保司工号' }
+                        ]
+                    },
+                    {
+                        id: 'policy',
+                        name: '保单管理',
+                        children: [
+                            { id: 'car_policy_entry', name: '保单录入' },
+                            { id: 'car_batch_plate', name: '批量录单' },
+                            { id: 'car_endorsement', name: '批单录入' },
+                            { id: 'car_policy_query', name: '保单查询' },
+                            { id: 'car_policy_data', name: '保单数据' },
+                            { id: 'car_unentered_stats', name: '未录入保单统计' },
+                            { id: 'car_policy_settings', name: '保单设置' }
+                        ]
+                    },
+                    {
+                        id: 'policy_mgmt',
+                        name: '政策管理',
+                        children: [
+                            { id: 'car_insurance_policy', name: '保险政策' },
+                            { id: 'car_retention', name: '留点设置' },
+                            { id: 'car_follow_policy', name: '跟单政策' },
+                            { id: 'car_region_reward', name: '区域奖励政策' },
+                            { id: 'car_policy_approval', name: '政策审批' },
+                            { id: 'car_digital_marketing', name: '数字营销方案' }
+                        ]
+                    },
+                    {
+                        id: 'report',
+                        name: '报表管理',
+                        children: [
+                            { id: 'car_report_branch_perf', name: '分支机构业绩报表' },
+                            { id: 'car_report_branch_expense', name: '分支机构费用报表' },
+                            { id: 'car_report_salesman_perf', name: '业务员业绩报表' },
+                            { id: 'car_report_issuer_perf', name: '出单员业绩报表' },
+                            { id: 'car_report_daily_weekly_monthly', name: '日周月报表' },
+                            { id: 'car_report_commission', name: '业务员佣金汇总' },
+                            { id: 'car_report_supervision', name: '监管报表' }
+                        ]
+                    },
+                    {
+                        id: 'stats',
+                        name: '统计分析',
+                        children: [
+                            { id: 'car_stats_source', name: '业务来源分析' },
+                            { id: 'car_stats_company', name: '保险公司分析' },
+                            { id: 'car_stats_dept', name: '组织部门业绩分析' },
+                            { id: 'car_stats_agent', name: '工号数据分析' },
+                            { id: 'car_stats_salesman', name: '业务员业绩分析' },
+                            { id: 'car_stats_region', name: '区域占比分析' },
+                            { id: 'car_stats_jiaoshang', name: '交商占比分析' },
+                            { id: 'car_stats_oldnew', name: '新旧车占比分析' },
+                            { id: 'car_stats_coverage', name: '险种占比分析' },
+                            { id: 'car_stats_branch', name: '分支机构分析' }
+                        ]
+                    }
+                ];
+
                 const activeMenu = ref('questionnaire'); // 默认进入问卷模块
-                const currentMenuName = computed(() => menus.find(m => m.id === activeMenu.value)?.name);
+                // 当前菜单名称：兼容产品管理二级 + 车险管理三级
+                const currentMenuName = computed(() => {
+                    const p = productMenus.find(m => m.id === activeMenu.value);
+                    if (p) return p.name;
+                    for (const g of carMenuGroups) {
+                        const c = g.children.find(i => i.id === activeMenu.value);
+                        if (c) return c.name;
+                    }
+                    return '产品中台';
+                });
+                // 是否当前为车险管理下的功能点
+                const isCarMenu = computed(() => String(activeMenu.value).startsWith('car_'));
+                // 当前所属一级模块名（面包屑用）
+                const currentSectionName = computed(() => productMenus.some(m => m.id === activeMenu.value) ? '产品管理' : (isCarMenu.value ? '车险管理' : '产品中台'));
+                const carMenuDescription = computed(() => '');
+
+                // 车险二级菜单（报价管理、保单管理等）各自可收放
+                const carGroupExpanded = ref({ quote: true, policy: true, policy_mgmt: true, report: true, stats: true });
+                const toggleCarGroup = (id) => {
+                    carGroupExpanded.value = { ...carGroupExpanded.value, [id]: !carGroupExpanded.value[id] };
+                    nextTick(() => lucide.createIcons());
+                };
+
+                // 报价配置 · 三 Tab
+                const quoteConfigTabs = [{ id: 'config', name: '报价配置' }, { id: 'sort', name: '保司排序' }, { id: 'custom', name: '自定义报价单' }];
+                const quoteConfigTab = ref('config');
+                const branchPerfTab = ref('branch');
+                const dailyWeeklyMonthlyTab = ref('weekly');
+                const reportSupervisionTab = ref('supervision');
+
+                // 车险 · 保单录入 Tab 与表单
+                const carEntryTabs = [{ id: 'single', name: '单笔录入' }, { id: 'batch', name: '批量录入' }, { id: 'endorsement', name: '批单录入' }];
+                const carEntryTab = ref('single');
+                const carPolicyForm = ref({ insuranceCompanyId: '', policyType: '3', policyNo: '', plateNo: '', vinCode: '', carModel: '', premiumCompulsory: '', premiumCommercial: '', vehicleTax: '', signDate: '', payDate: '', startDate: '', endDate: '', entryType: '2' });
+                const carImportBatches = ref([
+                    { batchNo: 'CARIMP20260307001', fileName: '车险保单导入_20260307.xlsx', totalCount: 50, successCount: 48, failCount: 2, status: 3, statusText: '部分失败', statusClass: 'text-amber-600 bg-amber-50 px-2 py-0.5 rounded text-xs', createTime: '2026-03-07 10:30' },
+                    { batchNo: 'CARIMP20260306002', fileName: '批量录单.xls', totalCount: 20, successCount: 20, failCount: 0, status: 2, statusText: '成功', statusClass: 'text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs', createTime: '2026-03-06 14:20' }
+                ]);
+                const carPolicyList = ref([
+                    { id: 1, company: '人保财险', policyNo: 'PDAA202601000001', salesman: '张三', startDate: '2026-01-15', endDate: '2027-01-14', policyType: '交商合并' },
+                    { id: 2, company: '平安财险', policyNo: 'PA202602000088', salesman: '李四', startDate: '2026-02-01', endDate: '2027-01-31', policyType: '商业险' }
+                ]);
+
+                // 一级模块及二级分组收起/放开时刷新侧边栏图标
+                watch([productExpanded, carExpanded, carGroupExpanded], () => nextTick(() => lucide.createIcons()), { deep: true });
 
                 // ================== 0. 平台产品 & 协议 & 分类 状态逻辑 ==================
                 const showSignModal = ref(false);
@@ -2197,6 +2808,8 @@
                 const showAgreementDrawer = ref(false);
                 const agreementDrawerMode = ref('add'); // 'add', 'edit', 'view'
                 const showImportModal = ref(false);
+                const showRetentionModal = ref(false);
+                const showDigitalPlanModal = ref(false);
                 const agreements = ref([
                     { id: 1, title: '(总)中国人寿保险专业代理协议', no: 'ZGRS202502001', status: '有效', startDate: '2025-02-15', endDate: '2027-02-14', insurer: '中国人寿' },
                     { id: 2, title: '(总)平安郑州保险专业代理协议', no: 'ZZ202505001', status: '有效', startDate: '2025-05-26', endDate: '2028-05-25', insurer: '平安财险' }
@@ -3003,13 +3616,16 @@
                 };
 
                 return {
-                    menus, activeMenu, currentMenuName,
+                    productExpanded, carExpanded, productMenus, carMenuGroups, carGroupExpanded, toggleCarGroup,
+                    activeMenu, currentMenuName, currentSectionName, isCarMenu, carMenuDescription,
+                    carEntryTabs, carEntryTab, carPolicyForm, carImportBatches,
+                    quoteConfigTabs, quoteConfigTab, branchPerfTab, dailyWeeklyMonthlyTab, reportSupervisionTab,
                     toasts, showToast,
                     // 新增 平台/协议/分类等模块
                     platformProducts, showSignModal, togglePromote,
                     showRewardModal, currentRewardProduct, openRewardModal,
                     showPlatformProductDetail, currentPlatformProduct, openPlatformProductDetail,
-                    agreements, showAgreementDrawer, agreementDrawerMode, agreementForm, showImportModal, 
+                    agreements, showAgreementDrawer, agreementDrawerMode, agreementForm, showImportModal, showRetentionModal, showDigitalPlanModal, 
                     openAddAgreementDrawer, openEditAgreementDrawer, openViewAgreementDrawer, closeAgreementDrawer, submitAgreementForm,
                     mallCategories,
                     showShareModal, openShareModal, currentShareItem,

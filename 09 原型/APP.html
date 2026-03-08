@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>i云保展业端 - 完整版 APP</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .slide-up-enter-active, .slide-up-leave-active { transition: transform 0.3s ease-out; }
+        .slide-up-enter-from, .slide-up-leave-to { transform: translateY(100%); }
+        
+        .slide-in-right-enter-active, .slide-in-right-leave-active { transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .slide-in-right-enter-from, .slide-in-right-leave-to { transform: translateX(100%); }
+        
+        .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
+        .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(20px) translateX(-50%); }
+        
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        
+        body { background-color: #e5e7eb; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", STHeiti, Tahoma, Tahoma, sans-serif; }
+        
+        .device-mockup {
+            width: 100%; max-width: 414px; height: 100vh; max-height: 896px; 
+            background-color: #f5f5f5; position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        @media (min-width: 640px) {
+            .device-mockup {
+                height: 850px; border-radius: 40px; border: 12px solid #0f172a;
+            }
+        }
+
+        /* 渐变文本 */
+        .text-gradient { background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* 人脸识别扫描动画 */
+        @keyframes scan {
+            0% { top: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(to right, transparent, #3b82f6, transparent);
+            animation: scan 2s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="device-mockup relative">
+        
+        <!-- 状态栏 -->
+        <div class="h-12 w-full flex items-center justify-between px-6 text-xs font-semibold z-50 bg-transparent absolute top-0 pointer-events-none" :class="isDarkStatus ? 'text-white' : 'text-gray-800'">
+            <span>16:55</span>
+            <div class="flex items-center space-x-1">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 rotate-90"></i>
+                <i data-lucide="wifi" class="w-4 h-4"></i>
+                <i data-lucide="battery-full" class="w-5 h-5"></i>
+            </div>
+        </div>
+
+        <!-- ==================== 主视图区 ==================== -->
+        <div v-show="activePage === 'main'" class="flex-1 flex flex-col h-full w-full absolute inset-0">
+            <!-- 动态占位，首页有自己特殊的头部 -->
+            <div :class="currentTab === 'home' ? 'h-0' : 'h-12 bg-white'"></div>
+
+            <div class="flex-1 overflow-y-auto hide-scrollbar pb-16 relative">
+                
+                <!-- 1. 首页 (Home) -->
+                <div v-show="currentTab === 'home'" class="animate-fade-in bg-[#f4f6f9] min-h-full pb-4">
+                    <!-- 首页专属头部 (含背景) -->
+                    <div class="bg-gradient-to-b from-blue-500 to-blue-50 pt-12 px-4 pb-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex flex-col items-center text-white cursor-pointer" @click="goToPage('customerService')">
+                                <i data-lucide="headset" class="w-6 h-6"></i>
+                                <span class="text-[10px] mt-0.5">客服</span>
+                            </div>
+                            <div class="flex-1 mx-4 bg-white/90 rounded-full h-9 flex items-center px-3 cursor-pointer" @click="goToPage('search')">
+                                <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                                <span class="text-sm text-gray-400">输入内容检索...</span>
+                            </div>
+                            <div class="flex flex-col items-center text-white relative cursor-pointer" @click="goToPage('messageCenter')">
+                                <i data-lucide="message-square" class="w-6 h-6"></i>
+                                <span class="text-[10px] mt-0.5">消息</span>
+                                <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 text-xs text-white/90 overflow-x-auto hide-scrollbar whitespace-nowrap">
+                            <span class="font-medium">热推:</span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded-full cursor-pointer" @click="goToPage('activityReward')">新人三重礼</span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded-full cursor-pointer" @click="goToPage('tutorList')">领取导师</span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded-full cursor-pointer" @click="goToPage('companyIntro')">平台介绍</span>
+                        </div>
+                    </div>
+
+                    <!-- 导师轮播 Banner -->
+                    <div class="px-4 -mt-2 cursor-pointer" @click="goToPage('tutorList')">
+                        <div class="rounded-xl overflow-hidden shadow-md bg-gradient-to-r from-blue-900 to-indigo-900 h-32 relative flex items-center p-4">
+                            <div class="z-10">
+                                <h2 class="text-2xl font-bold text-white italic tracking-wider shadow-sm text-gradient bg-gradient-to-r from-blue-100 to-white">星空导师</h2>
+                                <p class="text-blue-200 text-xs mt-1 bg-white/10 px-2 py-1 rounded inline-block border border-white/20">- 1V1 带您做保险 -</p>
+                            </div>
+                            <i data-lucide="award" class="absolute right-4 w-20 h-20 text-white/10"></i>
+                        </div>
+                    </div>
+
+                    <!-- 金刚区 (功能导航) -->
+                    <div class="bg-white mt-3 py-4 grid grid-cols-5 gap-y-4 px-2">
+                        <div v-for="item in homeActions" :key="item.name" class="flex flex-col items-center cursor-pointer" @click="handleHomeAction(item)">
+                            <div class="relative w-10 h-10 flex items-center justify-center mb-1">
+                                <!-- 纯CSS模拟图标背景 -->
+                                <div :class="`absolute inset-0 rounded-[14px] ${item.bgClass} opacity-20`"></div>
+                                <i :data-lucide="item.icon" :class="`w-5 h-5 relative z-10 ${item.iconColor}`"></i>
+                                <!-- 角标 -->
+                                <div v-if="item.badge" class="absolute -top-1 -right-2 bg-red-500 text-white text-[8px] font-bold px-1 rounded-full scale-90">{{item.badge}}</div>
+                            </div>
+                            <span class="text-[11px] text-gray-700 font-medium">{{item.name}}</span>
+                        </div>
+                    </div>
+
+                    <!-- 入职保通卡片 -->
+                    <div class="mx-4 mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 shadow-sm border border-blue-100 relative overflow-hidden" @click="goToPage('onboard')">
+                        <div class="absolute top-0 left-0 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-br-lg">入职保通</div>
+                        <div class="flex justify-between mt-3 mb-4">
+                            <div class="text-center">
+                                <div class="w-8 h-8 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-1"><i data-lucide="wallet" class="w-4 h-4 text-blue-600"></i></div>
+                                <div class="text-xs font-bold text-gray-800">佣金高达80%</div>
+                                <div class="text-[10px] text-gray-500">获得销售资质</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-8 h-8 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-1"><i data-lucide="users" class="w-4 h-4 text-blue-600"></i></div>
+                                <div class="text-xs font-bold text-gray-800">获得获客与增员</div>
+                                <div class="text-[10px] text-gray-500">独家赋能计划</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-8 h-8 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-1"><i data-lucide="smartphone" class="w-4 h-4 text-blue-600"></i></div>
+                                <div class="text-xs font-bold text-gray-800">科技工具助出单</div>
+                                <div class="text-[10px] text-gray-500">MPRC销售系统</div>
+                            </div>
+                        </div>
+                        <button class="w-full bg-white text-blue-600 border border-blue-200 text-sm font-bold py-2 rounded-full shadow-sm flex justify-center items-center">
+                            加入保通 <i data-lucide="arrow-right-circle" class="w-4 h-4 ml-1"></i>
+                        </button>
+                    </div>
+
+                    <!-- 新人三重礼 Banner -->
+                    <div class="px-4 mt-3 cursor-pointer" @click="goToPage('activityReward')">
+                        <div class="bg-gradient-to-r from-red-500 to-orange-400 rounded-xl p-3 flex justify-between items-center shadow-md text-white">
+                            <div>
+                                <div class="text-[10px] bg-red-600/50 inline-block px-1.5 rounded mb-1">新用户专享</div>
+                                <div class="text-lg font-bold italic">新人三重礼</div>
+                                <div class="text-[10px] opacity-90 mt-0.5">7天抽万元+首单补贴</div>
+                            </div>
+                            <div class="w-10 h-10 bg-white text-red-500 rounded-full flex items-center justify-center font-black italic shadow-inner">
+                                GO
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 推荐产品流 -->
+                    <div class="px-4 mt-4 grid grid-cols-2 gap-3">
+                        <div v-for="prod in products.slice(0,4)" :key="prod.id" class="bg-white rounded-xl p-3 shadow-sm" @click="goToPage('productDetail', prod)">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="font-bold text-gray-800 text-sm leading-tight">{{prod.name}}</div>
+                                <span v-if="prod.tags.includes('金标')" class="bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-[9px] px-1 rounded scale-90 origin-top-right">金标</span>
+                            </div>
+                            <div class="text-[10px] text-gray-500 mb-2 h-6 line-clamp-2">{{prod.shortDesc}}</div>
+                            <div class="border-t border-dashed border-gray-200 pt-2 flex justify-between items-end">
+                                <div class="text-orange-500 font-semibold text-xs">
+                                    宣传奖励<br>{{prod.commission}}
+                                </div>
+                                <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id}`" class="w-8 h-8 rounded bg-gray-50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 产品 (Products) -->
+                <div v-show="currentTab === 'products'" class="min-h-full bg-white flex flex-col">
+                    <div class="px-4 pt-2 pb-2 bg-white sticky top-0 z-20">
+                        <div class="flex items-center space-x-2">
+                            <div class="text-sm font-medium flex items-center">全国 <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i></div>
+                            <div class="flex-1 bg-gray-100 rounded-full flex items-center px-3 py-1.5 cursor-pointer" @click="goToPage('search')">
+                                <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                                <span class="text-xs text-gray-400">康乾8号</span>
+                            </div>
+                            <div class="flex flex-col items-center cursor-pointer" @click="goToPage('search')">
+                                <i data-lucide="bot" class="w-5 h-5 text-blue-500"></i>
+                                <span class="text-[9px] font-bold text-blue-600">AI快选</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 警告提示 -->
+                    <div class="bg-orange-50 text-orange-600 text-xs px-4 py-2 flex items-center justify-between">
+                        <span>未加入保通用戶佣金不得提现及无法获得奖励...</span>
+                        <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                    </div>
+
+                    <!-- 筛选栏 -->
+                    <div class="flex justify-between items-center px-4 py-2 border-b border-gray-100 bg-white sticky top-12 z-10 text-sm font-medium text-gray-700">
+                        <div class="flex items-center">类型 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-gray-400"></i></div>
+                        <div class="flex items-center">推荐 <i data-lucide="chevron-down" class="w-3 h-3 ml-1 text-gray-400"></i></div>
+                        <div class="text-yellow-600 flex items-center bg-yellow-50 px-2 py-0.5 rounded">
+                            <i data-lucide="award" class="w-3 h-3 mr-1"></i>金标主推
+                        </div>
+                        <div class="flex items-center">公司 <i data-lucide="filter" class="w-3 h-3 ml-1 text-gray-400"></i></div>
+                    </div>
+
+                    <!-- 次级标签 -->
+                    <div class="flex overflow-x-auto hide-scrollbar px-4 py-3 space-x-2">
+                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">新上线</span>
+                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">个养税优</span>
+                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">热销产品</span>
+                        <span class="whitespace-nowrap px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">父母优选</span>
+                    </div>
+
+                    <!-- 列表 -->
+                    <div class="px-4 pb-4 space-y-4">
+                        <div v-for="prod in products" :key="'list_'+prod.id" class="border-b border-gray-100 pb-4 flex cursor-pointer" @click="goToPage('productDetail', prod)">
+                            <div class="w-20 mr-3 text-center">
+                                <div class="relative w-full h-20 bg-blue-50 rounded-lg overflow-hidden mb-1 border border-gray-100">
+                                    <span v-if="prod.tags.includes('金标')" class="absolute top-0 left-0 bg-yellow-400 text-white text-[8px] px-1 font-bold z-10">金标</span>
+                                    <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id+10}`" class="w-full h-full object-cover">
+                                </div>
+                                <div class="text-[10px] text-gray-500 font-medium truncate">{{prod.insurer}}</div>
+                                <button class="mt-1 text-[10px] text-orange-500 bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full w-full" @click.stop="showToast('查看宣传奖励说明')">宣传奖励</button>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">{{prod.name}}</h3>
+                                <div class="flex flex-wrap gap-1 mb-2">
+                                    <span v-for="tag in prod.tags.slice(0,3)" :key="tag" class="text-[10px] border border-blue-200 text-blue-500 px-1 rounded" @click.stop="showToast(`标签详情：${tag}`)">{{tag}}</span>
+                                </div>
+                                <ul class="text-[11px] text-gray-500 space-y-0.5 mb-2 list-inside list-disc pl-2">
+                                    <li>{{prod.features[0]}}</li>
+                                    <li>{{prod.features[1]}}</li>
+                                </ul>
+                                <div class="flex justify-between items-center mt-1">
+                                    <div class="text-red-500 font-bold text-sm">{{prod.price}} <span class="text-[10px] text-gray-500 font-normal">元起</span></div>
+                                    <div class="text-orange-500 text-xs flex items-center font-medium">
+                                        最高 {{prod.commission}} <i data-lucide="chevron-right" class="w-3 h-3 ml-0.5"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. MPRC (CRM系统) -->
+                <div v-show="currentTab === 'mprc'" class="min-h-full bg-[#f4f6f9]">
+                    <div class="bg-blue-600 text-white pt-2 pb-16 px-4 relative">
+                        <div class="flex justify-center space-x-6 text-sm font-bold opacity-80 mb-6">
+                            <span>客户</span>
+                            <span class="text-white relative after:content-[''] after:absolute after:-bottom-2 after:left-1/2 after:-translate-x-1/2 after:w-4 after:h-1 after:bg-white after:rounded-full">访客</span>
+                            <span>活水</span>
+                        </div>
+                        
+                        <div class="bg-white/10 rounded-xl p-4 grid grid-cols-4 gap-2 text-center backdrop-blur-sm">
+                            <div>
+                                <div class="text-xl font-bold">0</div>
+                                <div class="text-[10px] opacity-80 mt-1">今日新增</div>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold">0</div>
+                                <div class="text-[10px] opacity-80 mt-1">已关联客户</div>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold">0</div>
+                                <div class="text-[10px] opacity-80 mt-1">意向访客</div>
+                            </div>
+                            <div>
+                                <div class="text-xl font-bold">0</div>
+                                <div class="text-[10px] opacity-80 mt-1">累计访客</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 -mt-10 relative z-10 bg-white rounded-t-2xl pt-4 min-h-[500px]">
+                        <div class="flex items-center space-x-4 text-sm mb-6 border-b border-gray-100 pb-2 overflow-x-auto hide-scrollbar text-gray-500">
+                            <span class="whitespace-nowrap">全部访客</span>
+                            <span class="whitespace-nowrap">已关联客户</span>
+                            <span class="whitespace-nowrap">意向访客</span>
+                            <span class="whitespace-nowrap font-bold text-blue-600">访问内容</span>
+                        </div>
+                        <div class="flex space-x-2 text-xs mb-10 overflow-x-auto hide-scrollbar">
+                            <span class="bg-gray-100 px-3 py-1 rounded-full text-gray-600 whitespace-nowrap">保险产品</span>
+                            <span class="bg-gray-100 px-3 py-1 rounded-full text-gray-600 whitespace-nowrap">计划书</span>
+                            <span class="bg-gray-100 px-3 py-1 rounded-full text-gray-600 whitespace-nowrap">文章资讯</span>
+                            <span class="bg-gray-100 px-3 py-1 rounded-full text-gray-600 whitespace-nowrap">保单整理</span>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-center pt-10 text-gray-400">
+                            <i data-lucide="inbox" class="w-16 h-16 opacity-20 mb-3"></i>
+                            <p class="text-sm">当前暂无数据</p>
+                        </div>
+
+                        <!-- 悬浮工具 -->
+                        <div class="absolute bottom-6 right-4 flex flex-col space-y-3">
+                            <button class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex flex-col items-center justify-center shadow font-bold text-[10px] leading-tight" @click="showToast('打开资料收集')">
+                                资料<br>收集
+                            </button>
+                            <button class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex flex-col items-center justify-center shadow font-bold text-[10px] leading-tight" @click="showToast('打开需求分析')">
+                                需求<br>分析
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 星罗计划 / 计划书 (Plan) -->
+                <div v-show="currentTab === 'plan'" class="min-h-full bg-[#f4f6f9]">
+                    <div class="bg-white pt-2 pb-4 px-4 sticky top-0 z-20 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <div class="text-sm font-medium flex items-center">全国 <i data-lucide="chevron-down" class="w-3 h-3 ml-0.5"></i></div>
+                            <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">计划书</h1>
+                            <div class="text-blue-600 text-sm font-medium cursor-pointer" @click="goToPage('planCreate')">新建计划书</div>
+                        </div>
+                        <div class="bg-gray-100 rounded-full flex items-center px-3 py-2 w-full">
+                            <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                            <input type="text" placeholder="输入产品名称，如：妈咪保贝" class="bg-transparent border-none outline-none text-sm w-full">
+                        </div>
+                    </div>
+
+                    <div class="bg-white px-4 py-5 mb-3 flex justify-between">
+                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('myPlans')">
+                            <div class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mb-2"><i data-lucide="clipboard-list" class="w-6 h-6 text-orange-500"></i></div>
+                            <span class="text-xs text-gray-700">我的计划书</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('productPK')">
+                            <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mb-2"><i data-lucide="swords" class="w-6 h-6 text-blue-500"></i></div>
+                            <span class="text-xs text-gray-700">产品 PK</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('dividendRates')">
+                            <div class="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center mb-2"><i data-lucide="percent" class="w-6 h-6 text-purple-500"></i></div>
+                            <span class="text-xs text-gray-700">分红实现率</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer relative" @click="goToPage('companyList')">
+                            <div class="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] px-1 rounded-full z-10">NEW</div>
+                            <div class="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center mb-2"><i data-lucide="building-2" class="w-6 h-6 text-yellow-600"></i></div>
+                            <span class="text-xs text-gray-700">查保司</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white px-4 pb-4 pt-2">
+                        <div class="flex space-x-6 text-sm text-gray-500 border-b border-gray-100 pb-2 mb-3 overflow-x-auto hide-scrollbar">
+                            <span class="font-bold text-blue-600 border-b-2 border-blue-600 pb-1">热门</span>
+                            <span class="whitespace-nowrap">终寿</span>
+                            <span class="whitespace-nowrap">重疾</span>
+                            <span class="whitespace-nowrap">年金</span>
+                            <span class="whitespace-nowrap">定寿</span>
+                            <span class="whitespace-nowrap">医疗</span>
+                        </div>
+                        
+                        <div class="flex space-x-2 mb-4">
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">新上线</span>
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded flex items-center">保司 <i data-lucide="chevron-down" class="w-3 h-3 ml-1"></i></span>
+                            <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded flex items-center">投保类型 <i data-lucide="chevron-down" class="w-3 h-3 ml-1"></i></span>
+                        </div>
+
+                        <!-- 计划书可用产品列表 -->
+                        <div class="space-y-4">
+                            <div v-for="prod in products" :key="'plan_'+prod.id" class="flex border-b border-gray-50 pb-4">
+                                <div class="w-16 h-16 bg-gray-100 rounded-lg mr-3 flex-shrink-0 overflow-hidden border border-gray-200">
+                                    <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${prod.id+20}`" class="w-full h-full object-cover bg-blue-50">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <h3 class="font-bold text-sm text-gray-800 pr-2">{{prod.name}}</h3>
+                                        <span v-if="prod.tags.includes('金标')" class="text-[10px] text-red-500 whitespace-nowrap">新上线</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">{{prod.insurer}}</div>
+                                    <div class="flex gap-1 mt-1 mb-1">
+                                        <span class="text-[9px] bg-orange-50 text-orange-500 px-1 border border-orange-100 rounded">在线投保</span>
+                                        <span class="text-[9px] text-blue-500 flex items-center" @click="showToast('核保支持')">核保支持 <i data-lucide="chevron-right" class="w-2 h-2"></i></span>
+                                    </div>
+                                    <div class="text-[10px] text-gray-500 truncate w-[220px]">
+                                        ① {{prod.features[0]}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 我的 (Profile) -->
+                <div v-show="currentTab === 'profile'" class="min-h-full bg-[#f4f6f9] pb-8">
+                    <!-- 用户信息头部 -->
+                    <div class="bg-white pt-6 pb-4 px-4 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-14 h-14 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm mr-3">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Agent" class="w-full h-full">
+                            </div>
+                            <div>
+                                <div class="text-lg font-bold text-gray-800">185****5205</div>
+                                <div class="text-xs text-blue-500 flex items-center mt-1 cursor-pointer" @click="goToPage('onboard')">
+                                    点此一键获取保险销售资质 <i data-lucide="chevron-right" class="w-3 h-3 ml-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3 text-gray-600">
+                            <span class="cursor-pointer" @click="showToast('账号设置')"><i data-lucide="settings" class="w-5 h-5"></i></span>
+                            <div class="relative cursor-pointer" @click="goToPage('messageCenter')">
+                                <i data-lucide="mail" class="w-5 h-5"></i>
+                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 text-white text-[8px] flex items-center justify-center rounded-full">3</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 警告横幅 -->
+                    <div class="bg-orange-50 text-orange-600 text-xs px-4 py-2 flex items-center justify-between border-y border-orange-100 cursor-pointer" @click="goToPage('onboard')">
+                        <span class="truncate">据监管要求，未加入保通用户佣金不得提现...</span>
+                        <i data-lucide="chevron-right" class="w-3 h-3 flex-shrink-0"></i>
+                    </div>
+
+                    <!-- 核心数据 -->
+                    <div class="bg-white px-4 py-4 grid grid-cols-4 gap-2 text-center mb-2">
+                        <div>
+                            <div class="text-lg font-bold text-gray-800">-</div>
+                            <div class="text-[10px] text-gray-500 mt-1">可提现(元)</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-gray-800">-</div>
+                            <div class="text-[10px] text-gray-500 mt-1">未结算(元)</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-gray-800">-</div>
+                            <div class="text-[10px] text-gray-500 mt-1">当期继续率</div>
+                        </div>
+                        <div>
+                            <div class="text-lg font-bold text-gray-800">-</div>
+                            <div class="text-[10px] text-gray-500 mt-1">新单退保率</div>
+                        </div>
+                    </div>
+
+                    <!-- 增员入口 -->
+                    <div class="bg-white px-4 py-3 flex justify-between items-center mb-2 border-t border-gray-50 cursor-pointer" @click="goToPage('recruit')">
+                        <div class="flex items-center text-sm font-medium text-gray-800">
+                            <i data-lucide="users" class="w-4 h-4 text-orange-400 mr-2"></i> 近期0位新增员 <i data-lucide="help-circle" class="w-3 h-3 text-gray-400 ml-1"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 flex items-center">
+                            去邀请领取奖励 <i data-lucide="chevron-right" class="w-3 h-3 ml-0.5"></i>
+                        </div>
+                    </div>
+
+                    <!-- 广告 Banner -->
+                    <div class="px-4 mb-2">
+                        <div class="bg-gradient-to-r from-red-600 to-orange-500 rounded-lg h-16 flex items-center justify-center text-white font-bold italic shadow-sm">
+                            <span class="text-xl">新人三重礼</span>
+                            <span class="text-[10px] font-normal not-italic bg-white/20 px-2 py-0.5 rounded ml-2">7天抽万元+首单享现金补贴</span>
+                        </div>
+                    </div>
+
+                    <!-- 订单管理 -->
+                    <div class="bg-white mb-2 pb-2">
+                        <div class="px-4 py-3 flex justify-between items-center border-b border-gray-50">
+                            <div class="text-sm font-bold text-gray-800">待续保订单</div>
+                            <div class="text-xs text-blue-500 flex items-center cursor-pointer" @click="showToast('全部订单')">去查看 <i data-lucide="chevron-right" class="w-3 h-3"></i></div>
+                        </div>
+                        <div class="flex justify-around py-4">
+                            <div class="flex flex-col items-center text-gray-700 cursor-pointer" @click="showToast('智能预核保')">
+                                <i data-lucide="clipboard-check" class="w-6 h-6 mb-1"></i><span class="text-xs">预核保</span>
+                            </div>
+                            <div class="flex flex-col items-center text-gray-700 cursor-pointer" @click="showToast('保单服务')">
+                                <i data-lucide="shield" class="w-6 h-6 mb-1"></i><span class="text-xs">保单服务</span>
+                            </div>
+                            <div class="flex flex-col items-center text-gray-700 cursor-pointer" @click="showToast('理赔中心')">
+                                <i data-lucide="banknote" class="w-6 h-6 mb-1"></i><span class="text-xs">理赔</span>
+                            </div>
+                            <div class="flex flex-col items-center text-gray-700 cursor-pointer" @click="showToast('进度查询')">
+                                <i data-lucide="search-check" class="w-6 h-6 mb-1"></i><span class="text-xs">进度查询</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 客户简报 -->
+                    <div class="flex px-4 space-x-2 mb-2">
+                        <div class="flex-1 bg-white rounded-lg p-3 flex items-center shadow-sm">
+                            <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3"><i data-lucide="eye" class="w-5 h-5 text-yellow-600"></i></div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-800">我的访客</div>
+                                <div class="text-[10px] text-gray-500">今日新增0次互动</div>
+                            </div>
+                        </div>
+                        <div class="flex-1 bg-white rounded-lg p-3 flex items-center shadow-sm cursor-pointer" @click="currentTab = 'mprc'">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3"><i data-lucide="users" class="w-5 h-5 text-purple-600"></i></div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-800">客户管理</div>
+                                <div class="text-[10px] text-gray-500">本月新增0位客户</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 服务与工具 -->
+                    <div class="bg-white p-4">
+                        <h3 class="text-sm font-bold text-gray-800 mb-4">服务与工具</h3>
+                        <div class="grid grid-cols-4 gap-y-5 gap-x-2">
+                            <div v-for="tool in profileTools" :key="tool.name" class="flex flex-col items-center cursor-pointer" @click="handleProfileTool(tool)">
+                                <div class="w-8 h-8 flex items-center justify-center mb-1 relative">
+                                    <i :data-lucide="tool.icon" :class="`w-6 h-6 ${tool.color}`"></i>
+                                    <span v-if="tool.badge" class="absolute -top-2 -right-3 bg-red-500 text-white text-[8px] font-bold px-1 rounded-full scale-75 whitespace-nowrap">{{tool.badge}}</span>
+                                </div>
+                                <span class="text-[10px] text-gray-600 text-center">{{tool.name}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 底部导航栏 TabBar -->
+            <div class="w-full h-14 bg-white/95 backdrop-blur border-t border-gray-100 flex justify-around items-center px-1 z-40 absolute bottom-0">
+                <div v-for="tab in tabs" :key="tab.id" 
+                     class="flex flex-col items-center justify-center w-full h-full cursor-pointer transition-colors relative"
+                     @click="currentTab = tab.id">
+                    <i :data-lucide="tab.icon" 
+                       :class="`w-5 h-5 mb-0.5 ${currentTab === tab.id ? 'text-blue-600' : 'text-gray-400'}`"
+                       :fill="currentTab === tab.id ? 'currentColor' : 'none'" fill-opacity="0.2"></i>
+                    <span :class="`text-[9px] font-medium ${currentTab === tab.id ? 'text-blue-600' : 'text-gray-500'}`">
+                        {{ tab.name }}
+                    </span>
+                    <!-- 特殊中间按钮样式 MPRC -->
+                    <div v-if="tab.id === 'mprc'" class="absolute -top-3 w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-100 shadow-sm z-50">
+                        <i data-lucide="infinity" :class="`w-6 h-6 ${currentTab === 'mprc' ? 'text-blue-600' : 'text-gray-800'}`"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 其他已存在独立页面 (Message, Customer Service, Chat, etc.) ==================== -->
+        <!-- 消息中心 (Message Center) -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'messageCenter'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800">消息通知</h1>
+                    <div class="flex space-x-3 text-gray-600">
+                        <span @click="showToast('一键已读全部消息')"><i data-lucide="check-check" class="w-5 h-5"></i></span>
+                        <span @click="showToast('已收藏消息列表')"><i data-lucide="star" class="w-5 h-5"></i></span>
+                        <span @click="showToast('跳转至消息接收设置')"><i data-lucide="settings" class="w-5 h-5"></i></span>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-2 border-b border-gray-100">
+                    <div class="bg-gray-100 rounded-full flex items-center px-3 py-1.5 mx-2">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                        <input type="text" placeholder="搜索消息内容" class="bg-transparent border-none outline-none text-sm w-full text-gray-700">
+                    </div>
+                </div>
+
+                <div class="flex bg-white px-2 pt-2 border-b border-gray-100 text-sm text-gray-600">
+                    <div class="flex-1 text-center pb-2 border-b-2 border-blue-600 text-blue-600 font-bold relative">
+                        全部
+                        <span class="absolute top-0 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </div>
+                    <div class="flex-1 text-center pb-2 relative">
+                        产品
+                        <span class="absolute top-0 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </div>
+                    <div class="flex-1 text-center pb-2">活动</div>
+                    <div class="flex-1 text-center pb-2">通知</div>
+                    <div class="flex-1 text-center pb-2">我与保通</div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-3 hide-scrollbar">
+                    <div class="bg-white rounded-xl p-4 shadow-sm relative cursor-pointer" @click="goToPage('productDetail', products[0])">
+                        <div class="absolute top-4 left-4 w-2 h-2 bg-red-500 rounded-full"></div>
+                        <div class="flex items-center mb-2 pl-4">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold text-sm text-gray-800">产品上新</span>
+                                    <span class="text-xs text-gray-400">10:30</span>
+                                </div>
+                                <span class="text-[10px] bg-blue-50 text-blue-500 px-1.5 rounded mt-0.5 inline-block">产品</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 pl-4 border-l-2 border-transparent hover:border-gray-200 ml-4 mt-2">
+                            您关注的【众安尊享e生2026版】已全新上线，拓展康复责任，速来查看详情并转发给客户吧！
+                            <span class="text-blue-500 ml-1">查看详情 ></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- 我的客服 (Customer Service) -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'customerService'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">我的客服</h1>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-4 pb-24 hide-scrollbar space-y-4">
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-gray-50 px-4 py-2 text-xs font-bold text-gray-500 border-b border-gray-100">保通相关</div>
+                        <div class="divide-y divide-gray-50">
+                            <div class="px-4 py-3 text-sm text-gray-800 flex justify-between items-center cursor-pointer active:bg-gray-50" @click="showToast('什么是保通 - 问题详情')">
+                                什么是保通 <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="absolute bottom-0 w-full bg-white p-3 border-t border-gray-200 flex space-x-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-8 z-20">
+                    <button class="flex-1 bg-blue-50 text-blue-600 font-bold py-2.5 rounded-full border border-blue-200 flex items-center justify-center" @click="showToast('呼叫：400-100-0550')">
+                        <i data-lucide="phone" class="w-4 h-4 mr-2"></i> 咨询电话
+                    </button>
+                    <button class="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-full shadow-md flex items-center justify-center" @click="goToPage('onlineChat')">
+                        <i data-lucide="message-circle" class="w-4 h-4 mr-2"></i> 在线客服
+                    </button>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 独立页面：领万元奖 (Activity Reward) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'activityReward'" class="absolute inset-0 z-50 bg-[#fff1f0] flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 bg-transparent absolute w-full top-12 z-20">
+                    <span class="cursor-pointer p-2 -ml-2 bg-white/50 rounded-full flex items-center justify-center" @click="goBack"><i data-lucide="chevron-left" class="w-5 h-5 text-red-600"></i></span>
+                    <h1 class="text-base font-bold text-red-800 drop-shadow-sm">新人三重礼</h1>
+                    <span class="text-sm text-red-800 font-medium bg-white/50 px-2 py-1 rounded-full cursor-pointer" @click="showToast('活动规则详情')">规则</span>
+                </div>
+                <div class="flex-1 overflow-y-auto hide-scrollbar pb-10">
+                    <div class="h-64 bg-gradient-to-b from-red-500 to-orange-400 relative pt-24 px-4 text-center overflow-hidden">
+                        <i data-lucide="gift" class="absolute w-40 h-40 opacity-20 -right-10 top-10 text-yellow-300"></i>
+                        <h2 class="text-4xl font-black text-white italic drop-shadow-md tracking-wider">新人三重礼</h2>
+                        <p class="text-yellow-200 text-sm mt-2 bg-red-900/30 inline-block px-3 py-1 rounded-full border border-red-400/50">7天抽万元 + 首单享现金补贴</p>
+                    </div>
+                    <div class="px-4 -mt-10 relative z-10 space-y-4">
+                        <div class="bg-white rounded-2xl p-4 shadow-lg border border-red-50">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-500 mr-3"><i data-lucide="ticket" class="w-5 h-5"></i></div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-800 text-lg">一重好礼</h3>
+                                        <p class="text-xs text-gray-500">连续7天，每日领钱</p>
+                                    </div>
+                                </div>
+                                <button class="bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold px-4 py-2 rounded-full shadow-md text-sm animate-pulse" @click="showToast('参与抽奖成功')">去抽奖</button>
+                            </div>
+                            <div class="flex justify-between px-2 relative">
+                                <div class="absolute top-1/2 left-4 right-4 h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                                <div v-for="i in 7" :key="i" class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold relative z-10" :class="i<=2 ? 'bg-red-500 text-white shadow-sm' : 'bg-gray-200 text-gray-400'">{{i}}</div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 shadow-lg border border-red-50 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-16 h-16 bg-orange-50 rounded-xl flex items-center justify-center mr-3 relative overflow-hidden border border-orange-100">
+                                    <img src="https://api.dicebear.com/7.x/shapes/svg?seed=giftbox" class="w-12 h-12 object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800">马年限定礼盒</h3>
+                                    <p class="text-[10px] text-orange-500 mt-1 bg-orange-50 px-1 inline-block rounded">价值299元实物大礼</p>
+                                </div>
+                            </div>
+                            <button class="bg-red-100 text-red-600 font-bold px-4 py-1.5 rounded-full text-sm border border-red-200" @click="showToast('跳转礼品详情并提示加入保通')">去出单</button>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-lg border border-red-50 overflow-hidden">
+                            <div class="bg-red-50 p-4 border-b border-red-100 flex items-center">
+                                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white mr-2"><i data-lucide="coins" class="w-4 h-4"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-gray-800 text-base">首单享现金补贴</h3>
+                                    <p class="text-xs text-gray-500">不同险种奖励叠加更丰厚</p>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="flex space-x-2 text-center text-xs font-bold mb-4">
+                                    <div class="flex-1 bg-orange-500 text-white py-2 rounded shadow-sm">长险<br>奖50元</div>
+                                    <div class="flex-1 bg-gray-50 text-gray-600 py-2 rounded border border-gray-200">医疗险<br>奖30元</div>
+                                    <div class="flex-1 bg-gray-50 text-gray-600 py-2 rounded border border-gray-200">意外险<br>奖10元</div>
+                                </div>
+                                <div class="border border-red-100 rounded-xl p-3 bg-gradient-to-br from-white to-red-50">
+                                    <div class="font-bold text-sm text-gray-800 mb-1">中意一生中意(福享版) 终身寿险</div>
+                                    <div class="text-[10px] text-gray-500 mb-3">重疾定寿 保费需≥2000</div>
+                                    <div class="flex justify-between items-end">
+                                        <div>
+                                            <div class="text-2xl font-black text-red-500 leading-none">52.6% <span class="text-xs font-normal text-gray-500 ml-1">佣金最高</span></div>
+                                            <div class="text-sm font-bold text-orange-500 mt-1">+ 最高额外奖励 888</div>
+                                        </div>
+                                        <button class="bg-gradient-to-r from-orange-400 to-red-500 text-white font-bold px-5 py-2 rounded-full shadow-md text-sm" @click="goToPage('productDetail', products[0])">去赚钱</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl p-4 shadow-lg border border-red-50">
+                            <h3 class="font-bold text-gray-800 mb-3 flex items-center"><span class="w-1 h-3 bg-red-500 mr-2 rounded-full"></span>展业工具支持</h3>
+                            <div class="mb-2"><span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">售前辅助</span></div>
+                            <div class="grid grid-cols-4 gap-2 text-center mb-4">
+                                <div class="cursor-pointer" @click="goToPage('companyIntro')">
+                                    <div class="w-10 h-10 mx-auto bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-1"><i data-lucide="building-2" class="w-5 h-5"></i></div>
+                                    <div class="text-[10px] text-gray-600">了解保通</div>
+                                </div>
+                                <div class="cursor-pointer" @click="goToPage('training')">
+                                    <div class="w-10 h-10 mx-auto bg-green-50 text-green-600 rounded-full flex items-center justify-center mb-1"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                                    <div class="text-[10px] text-gray-600">专业培训</div>
+                                </div>
+                                <div class="cursor-pointer" @click="goToPage('momentsAssistant')">
+                                    <div class="w-10 h-10 mx-auto bg-purple-50 text-purple-600 rounded-full flex items-center justify-center mb-1"><i data-lucide="camera" class="w-5 h-5"></i></div>
+                                    <div class="text-[10px] text-gray-600">朋友圈助手</div>
+                                </div>
+                                <div class="cursor-pointer" @click="currentTab = 'plan'; goBack()">
+                                    <div class="w-10 h-10 mx-auto bg-orange-50 text-orange-600 rounded-full flex items-center justify-center mb-1"><i data-lucide="file-text" class="w-5 h-5"></i></div>
+                                    <div class="text-[10px] text-gray-600">计划书</div>
+                                </div>
+                            </div>
+                            <div class="mb-2"><span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded">售后无忧</span></div>
+                            <div class="grid grid-cols-4 gap-2 text-center">
+                                <div class="cursor-pointer" @click="showToast('进入保单托管')">
+                                    <div class="w-10 h-10 mx-auto bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-1"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                                    <div class="text-[10px] text-gray-600">保单托管</div>
+                                </div>
+                                <div class="cursor-pointer" @click="showToast('进入理赔中心')">
+                                    <div class="w-10 h-10 mx-auto bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-1"><i data-lucide="heart-handshake" class="w-5 h-5"></i></div>
+                                    <div class="text-[10px] text-gray-600">省心赔</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 独立页面：星空导师 (Star Tutors) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'tutorList'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 bg-white border-b border-gray-100 shrink-0 mt-12 z-10">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800">星空导师带教</h1>
+                    <div class="w-6"></div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                    <div class="bg-gradient-to-r from-indigo-600 to-blue-500 rounded-2xl p-4 text-white shadow-lg mb-2">
+                        <h2 class="text-xl font-bold mb-1">新人破蛋特训营</h2>
+                        <p class="text-xs text-blue-100 mb-4">选择您的专属导师，1V1手把手教您做保险，签下首单！</p>
+                        <div class="flex space-x-2 text-[10px]">
+                            <span class="bg-white/20 px-2 py-1 rounded-full border border-white/30">MDRT授课</span>
+                            <span class="bg-white/20 px-2 py-1 rounded-full border border-white/30">实战演练</span>
+                            <span class="bg-white/20 px-2 py-1 rounded-full border border-white/30">社群答疑</span>
+                        </div>
+                    </div>
+                    <div v-for="tutor in tutorDataList" :key="tutor.id" class="bg-white rounded-xl shadow-sm p-4 relative overflow-hidden">
+                        <div class="flex items-start mb-3">
+                            <img :src="tutor.avatar" class="w-14 h-14 rounded-full border-2 border-gray-100 mr-3">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center">
+                                    <h3 class="font-bold text-gray-800 text-base">{{tutor.name}}</h3>
+                                    <span class="text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-200"><i data-lucide="award" class="w-3 h-3 inline mr-0.5"></i>{{tutor.title}}</span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1 mb-2">{{tutor.desc}}</div>
+                                <div class="flex flex-wrap gap-1">
+                                    <span v-for="tag in tutor.tags" :key="tag" class="text-[10px] text-blue-500 bg-blue-50 px-1.5 rounded">{{tag}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-50 pt-3 text-right">
+                            <button v-if="joinedTutorId === tutor.id" class="border border-green-500 text-green-600 font-bold px-6 py-1.5 rounded-full text-sm bg-green-50 flex items-center justify-center ml-auto" @click="showToast('正在呼叫导师：' + tutor.name)">
+                                <i data-lucide="phone" class="w-4 h-4 mr-1"></i> 联系导师
+                            </button>
+                            <button v-else class="bg-blue-600 text-white font-bold px-6 py-1.5 rounded-full text-sm shadow-sm" @click="joinTutor(tutor.id)">申请加入</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 独立页面：i生活 (iLife) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'iLife'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 bg-white border-b border-gray-100 shrink-0 mt-12 z-10">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800">i 生活</h1>
+                    <span class="text-sm text-gray-500 cursor-pointer" @click="showToast('查看我的卡券')">卡包</span>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 pb-10">
+                    <div class="bg-gradient-to-br from-green-500 to-teal-400 rounded-2xl p-5 text-white shadow-lg mb-6 relative overflow-hidden">
+                        <i data-lucide="coffee" class="absolute w-32 h-32 opacity-20 -right-5 top-0"></i>
+                        <h2 class="text-2xl font-bold mb-1">展业专属权益</h2>
+                        <p class="text-sm text-green-100 opacity-90 mb-4">吃喝玩乐，全面赋能代理人日常生活</p>
+                        <div class="text-3xl font-black italic">VIP 尊享</div>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-3 text-sm flex items-center"><span class="w-1 h-3 bg-green-500 mr-2 rounded-full"></span>出行与充电</h3>
+                    <div class="space-y-3 mb-6">
+                        <div class="bg-white rounded-xl p-4 flex items-center shadow-sm">
+                            <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mr-4"><i data-lucide="car-taxi-front" class="w-6 h-6"></i></div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-800 text-sm">滴滴出行百元打车包</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">展业拜访更轻松</p>
+                            </div>
+                            <button class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full" @click="showToast('领取打车券成功')">领取</button>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 flex items-center shadow-sm">
+                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-500 mr-4"><i data-lucide="zap" class="w-6 h-6"></i></div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-800 text-sm">特来电充电8折卡</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">新能源车主专属福利</p>
+                            </div>
+                            <button class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full" @click="showToast('领取充电券成功')">领取</button>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-gray-800 mb-3 text-sm flex items-center"><span class="w-1 h-3 bg-green-500 mr-2 rounded-full"></span>餐饮与商超</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-xl p-4 flex items-center shadow-sm">
+                            <div class="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 mr-4"><i data-lucide="coffee" class="w-6 h-6"></i></div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-800 text-sm">瑞幸咖啡买一送一券</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">和客户面谈的最佳搭配</p>
+                            </div>
+                            <button class="bg-green-500 text-white text-xs font-bold px-3 py-1.5 rounded-full" @click="showToast('领取咖啡券成功')">领取</button>
+                        </div>
+                        <div class="bg-white rounded-xl p-4 flex items-center shadow-sm">
+                            <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500 mr-4"><i data-lucide="shopping-bag" class="w-6 h-6"></i></div>
+                            <div class="flex-1">
+                                <h4 class="font-bold text-gray-800 text-sm">永辉超市满99减20</h4>
+                                <p class="text-xs text-gray-500 mt-0.5">日常采购享优惠</p>
+                            </div>
+                            <button class="border border-green-500 text-green-600 text-xs font-bold px-3 py-1.5 rounded-full bg-green-50" @click="showToast('已领取过')">已领</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 独立页面：朋友圈助手 (Moments Assistant) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'momentsAssistant'" class="absolute inset-0 z-50 bg-gray-50 flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12 z-10 space-x-3">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <div class="flex-1 bg-gray-100 rounded-full h-8 flex items-center px-3">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                        <input type="text" placeholder="输入关键词检索发圈文案" class="bg-transparent border-none outline-none text-sm w-full text-gray-700" @keyup.enter="showToast('执行文案搜索...')">
+                    </div>
+                    <span class="text-sm font-bold text-gray-800 cursor-pointer" @click="showToast('我的足迹')">足迹</span>
+                </div>
+                <div class="bg-white flex overflow-x-auto hide-scrollbar px-4 py-2 border-b border-gray-100 shrink-0">
+                    <span v-for="tab in ['节日', '财经资讯', '健康', '保险科普', '展业素材', '早安签']" :key="tab" @click="momentsCategory = tab" :class="`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-medium mr-2 transition-colors ${momentsCategory === tab ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-100 text-gray-600'}`">{{tab}}</span>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 pb-10">
+                    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 text-sm text-gray-800 leading-relaxed text-justify relative">
+                            <div class="absolute top-0 right-0 bg-blue-50 text-blue-600 text-[10px] px-2 py-1 rounded-bl-lg font-bold">AI智能生成</div>
+                            春天是万物复苏的季节，也是做好全年家庭健康规划的最好时机。🌱<br><br>
+                            千万别让“没时间”成为借口，一份完善的医疗+重疾配置，是全家人最坚实的底气！[奋斗][奋斗]<br>
+                            #春季健康规划 #保险配置 #爱家人
+                        </div>
+                        <div class="px-4 pb-3 flex space-x-2 overflow-x-auto hide-scrollbar">
+                            <img src="https://picsum.photos/id/10/200/200" class="w-24 h-24 object-cover rounded-lg">
+                            <img src="https://picsum.photos/id/11/200/200" class="w-24 h-24 object-cover rounded-lg">
+                        </div>
+                        <div class="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center text-xs">
+                            <span class="text-gray-400">1200次转发</span>
+                            <div class="flex space-x-2">
+                                <button class="border border-blue-200 text-blue-600 px-3 py-1.5 rounded-full bg-white flex items-center" @click="showToast('图片已保存至相册')"><i data-lucide="download" class="w-3 h-3 mr-1"></i>保存图片</button>
+                                <button class="bg-blue-600 text-white px-4 py-1.5 rounded-full font-bold shadow-sm flex items-center" @click="showToast('文案已复制')"><i data-lucide="copy" class="w-3 h-3 mr-1"></i>复制文案</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        <div class="p-4 text-sm text-gray-800 leading-relaxed text-justify relative">
+                            <div class="absolute top-0 right-0 bg-orange-50 text-orange-600 text-[10px] px-2 py-1 rounded-bl-lg font-bold">热门展业</div>
+                            最近遇到很多人问：“我有社保了，还需要买商业医疗险吗？”🤔<br><br>
+                            打个比方，社保是我们的“保暖内衣”，商业险是“羽绒服”。大病面前，突破社保用药限制的百万医疗险，才是真正保命的护城河。点击下方链接测一测您的保障缺口吧！👇
+                        </div>
+                        <div class="bg-gray-100 mx-4 mb-3 p-3 rounded-lg flex items-center border border-gray-200">
+                            <div class="w-10 h-10 bg-blue-500 rounded text-white flex items-center justify-center mr-3 font-bold text-xs"><i data-lucide="link" class="w-5 h-5"></i></div>
+                            <div class="flex-1 truncate text-xs text-gray-600">点击测算您的家庭保障缺口评估报告</div>
+                        </div>
+                        <div class="bg-gray-50 p-3 border-t border-gray-100 flex justify-between items-center text-xs">
+                            <span class="text-gray-400">895次转发</span>
+                            <button class="bg-blue-600 text-white px-5 py-1.5 rounded-full font-bold shadow-sm flex items-center" @click="showToast('文案及链接已复制')"><i data-lucide="share" class="w-3 h-3 mr-1"></i>一键去发圈</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 独立页面：公司介绍 (Company Intro) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'companyIntro'" class="absolute inset-0 z-50 bg-white flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 absolute w-full top-12 z-20 bg-gradient-to-b from-black/50 to-transparent">
+                    <span class="cursor-pointer p-2 -ml-2 text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 drop-shadow"></i></span>
+                    <span class="cursor-pointer p-2 -mr-2 text-white" @click="showToast('已收藏公司介绍')"><i data-lucide="star" class="w-5 h-5 drop-shadow"></i></span>
+                </div>
+                <div class="flex-1 overflow-y-auto hide-scrollbar pb-24">
+                    <div class="h-64 bg-gray-900 relative">
+                        <img src="https://picsum.photos/id/1044/400/300" class="w-full h-full object-cover opacity-60">
+                        <div class="absolute bottom-6 left-6 text-white">
+                            <h1 class="text-3xl font-black mb-1 drop-shadow-lg">保通保险代理</h1>
+                            <p class="text-sm font-medium opacity-90 drop-shadow">让保险更简单，让代理人更专业</p>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center"><span class="w-1.5 h-4 bg-blue-600 mr-2 rounded-sm"></span>关于我们</h2>
+                            <p class="text-sm text-gray-600 leading-relaxed text-justify">保通保险代理有限公司，作为全国性专业保险中介机构，依托领先的科技实力与大数据驱动，致力于为广大独立保险代理人提供涵盖产品、培训、获客、理赔等全生命周期的数字化展业赋能平台。</p>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center"><span class="w-1.5 h-4 bg-blue-600 mr-2 rounded-sm"></span>平台优势</h2>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center mb-2"><i data-lucide="shield-check" class="w-4 h-4"></i></div>
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1">合规安全</h3>
+                                    <p class="text-[10px] text-gray-500">全国性牌照，金事通严格认证</p>
+                                </div>
+                                <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                                    <div class="w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center mb-2"><i data-lucide="package-open" class="w-4 h-4"></i></div>
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1">海量产品</h3>
+                                    <p class="text-[10px] text-gray-500">数百款独家定制高性价比好险</p>
+                                </div>
+                                <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                                    <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mb-2"><i data-lucide="banknote" class="w-4 h-4"></i></div>
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1">极速结算</h3>
+                                    <p class="text-[10px] text-gray-500">佣金体系透明，提现极速到账</p>
+                                </div>
+                                <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                    <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center mb-2"><i data-lucide="smartphone" class="w-4 h-4"></i></div>
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1">科技赋能</h3>
+                                    <p class="text-[10px] text-gray-500">计划书、智能预核保全面支持</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 w-full bg-white p-4 border-t border-gray-100 flex space-x-3 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] pb-8 z-30">
+                    <button class="flex-1 bg-white text-blue-600 border border-blue-600 font-bold py-3 rounded-full text-sm flex items-center justify-center" @click="showToast('正在下载 完整版企业画册.pdf')"><i data-lucide="download" class="w-4 h-4 mr-2"></i> 下载 PDF</button>
+                    <button class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-full shadow-md text-sm flex items-center justify-center" @click="showToast('调起微信分享，发送给客户')"><i data-lucide="share" class="w-4 h-4 mr-2"></i> 分享给客户</button>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 全局搜索 (Search) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'search'" class="absolute inset-0 z-[40] bg-white flex flex-col">
+                <div class="h-12 flex items-center px-4 border-b border-gray-100 mt-12 shrink-0 space-x-3 bg-white z-10">
+                    <span class="cursor-pointer flex items-center justify-center -ml-2 p-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-600"></i></span>
+                    <div class="flex-1 bg-gray-100 rounded-full h-8 flex items-center px-3">
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 mr-2"></i>
+                        <input type="text" v-model="searchQuery" :readonly="isAIChatMode" placeholder="支持搜索产品、计划书、课程..." class="bg-transparent border-none outline-none text-sm w-full text-gray-700 placeholder-gray-400" @keyup.enter="performSearch">
+                    </div>
+                    <span class="text-sm text-blue-600 font-medium cursor-pointer" @click="performSearch">搜索</span>
+                    <div class="flex flex-col items-center text-blue-600 cursor-pointer" @click="startAIChat">
+                        <i data-lucide="bot" class="w-5 h-5"></i>
+                        <span class="text-[8px] font-bold mt-0.5">AI快选</span>
+                    </div>
+                </div>
+                <div v-if="!isAIChatMode" class="flex-1 flex flex-col overflow-hidden bg-[#f4f6f9]">
+                    <div class="flex space-x-6 text-sm text-gray-500 border-b border-gray-100 bg-white px-4 py-2 overflow-x-auto hide-scrollbar shrink-0">
+                        <span v-for="tab in searchTabsList" :key="tab.id" @click="currentSearchTab = tab.id" :class="`whitespace-nowrap cursor-pointer pb-1 ${currentSearchTab === tab.id ? 'font-bold text-blue-600 border-b-2 border-blue-600' : ''}`">{{ tab.name }}</span>
+                    </div>
+                    <div v-if="!hasSearched || searchQuery === ''" class="flex-1 overflow-y-auto p-4 bg-white">
+                        <div class="mb-6" v-if="searchHistory.length > 0">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold text-gray-800">历史搜索</h3>
+                                <span class="text-gray-400 cursor-pointer p-1" @click="searchHistory = []"><i data-lucide="trash" class="w-4 h-4"></i></span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span v-for="(item, idx) in searchHistory" :key="idx" class="bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full cursor-pointer" @click="performSearchWord(item)">{{item}}</span>
+                            </div>
+                        </div>
+                        <div class="mb-6">
+                            <h3 class="text-sm font-bold text-gray-800 mb-3">搜索发现</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="bg-gray-50 text-blue-600 border border-blue-100 text-xs px-3 py-1.5 rounded-full cursor-pointer" @click="performSearchWord('康乾8号')">康乾8号</span>
+                                <span class="bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-full cursor-pointer" @click="performSearchWord('哪吒2号')">哪吒2号</span>
+                                <span class="bg-gray-50 text-gray-700 text-xs px-3 py-1.5 rounded-full cursor-pointer" @click="performSearchWord('开门红')">开门红</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-800 mb-3">热搜榜</h3>
+                            <ul class="space-y-4 text-sm text-gray-700">
+                                <li class="flex items-start cursor-pointer" @click="showToast('打开头条详情')"><span class="text-red-500 font-bold mr-3">1</span><span class="truncate">倒计时！众民保中高端即将升级...</span></li>
+                                <li class="flex items-start cursor-pointer" @click="showToast('打开培训详情')"><span class="text-red-400 font-bold mr-3">2</span><span class="truncate">新手开单必学：如何讲解免责条款</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div v-else class="flex-1 overflow-y-auto p-3">
+                        <div v-if="searchQuery === '无结果测试'" class="text-center pt-10">
+                            <i data-lucide="search-x" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                            <p class="text-sm text-gray-500 mb-6">什么都没找到，换个词试试看</p>
+                        </div>
+                        <div v-else class="space-y-3">
+                            <div class="text-xs text-gray-500 mb-2 pl-1">为您找到 "{{searchQuery}}" 相关结果</div>
+                            <div v-if="currentSearchTab === 'all' || currentSearchTab === 'product'" class="bg-white p-4 rounded-xl shadow-sm flex cursor-pointer" @click="goToPage('productDetail', products[0])">
+                                <div class="w-20 h-20 bg-gray-100 rounded-lg mr-3 relative overflow-hidden">
+                                    <span class="absolute top-0 left-0 bg-yellow-400 text-white text-[8px] px-1 font-bold z-10">金标</span>
+                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=p1" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-gray-800 text-sm mb-1 leading-tight">众安尊享e生2026版</h3>
+                                    <div class="flex space-x-1 mb-1">
+                                        <span class="text-[9px] border border-blue-200 text-blue-500 px-1 rounded">互联网</span>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 mb-2 truncate">拓展康复责任，有机会标体承保</p>
+                                    <div class="flex justify-between items-end">
+                                        <div class="text-red-500 font-bold text-sm">¥ 142 <span class="text-[10px] font-normal text-gray-500">起</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="flex-1 flex flex-col bg-[#f0f2f5] relative">
+                    <div class="flex-1 p-4 overflow-y-auto space-y-4 pb-20">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-2 shrink-0"><i data-lucide="bot" class="w-5 h-5"></i></div>
+                            <div class="bg-white rounded-2xl rounded-tl-none p-3 shadow-sm text-sm text-gray-800 max-w-[85%]">
+                                <p class="mb-2">您好，我是AI智能助手。请问您的客户是想买什么类型的保险？</p>
+                                <div class="space-y-2 mt-3 border-t border-gray-100 pt-2">
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="text-xs text-gray-500 w-full">险种快捷选择</span>
+                                        <button class="bg-blue-50 text-blue-600 border border-blue-200 px-3 py-1 rounded text-xs font-medium" @click="showToast('选择重疾')">重疾</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 w-full bg-white p-3 border-t border-gray-100 flex items-center shadow-[0_-5px_10px_rgba(0,0,0,0.02)] pb-8 z-10">
+                        <button class="bg-gray-100 text-gray-600 border border-gray-200 px-4 py-2 rounded-full text-xs font-medium mr-2 flex items-center" @click="isAIChatMode = false"><i data-lucide="x" class="w-3 h-3 mr-1"></i> 退出AI</button>
+                        <div class="flex-1 bg-gray-50 rounded-full h-10 px-4 flex items-center justify-center text-xs text-gray-400 border border-gray-200">已进入问答模式，无法手动输入</div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 在线客服 (Online Chat) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'onlineChat'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800">在线客服</h1>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center p-6 text-gray-500">
+                    <i data-lucide="message-circle" class="w-16 h-16 mb-4 opacity-30"></i>
+                    <p class="text-sm text-center">智能客服对话界面</p>
+                    <p class="text-xs mt-2">猜你想问、咨询产品、智能对话</p>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 增员专区 (Recruit) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'recruit'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12">
+                    <span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800">增员专区</h1>
+                </div>
+                <div class="flex-1 flex flex-col items-center justify-center p-6 text-gray-500">
+                    <i data-lucide="user-plus" class="w-16 h-16 mb-4 opacity-30"></i>
+                    <p class="text-sm text-center">邀请好友加入，领取奖励</p>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 独立页面层：入职保通 (Onboarding - 完整五步走) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'onboard'" class="absolute inset-0 z-50 bg-white flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 border-b border-gray-100 mt-12 shrink-0 bg-white z-20">
+                    <span class="cursor-pointer flex items-center justify-center -ml-2 p-2" @click="exitOnboard"><i data-lucide="x" class="w-6 h-6 text-gray-800"></i></span>
+                    <h1 class="text-base font-bold text-gray-800">
+                        {{ onboardStep === 0 ? '加入保通' : 
+                           onboardStep === 1 ? '身份核验' : 
+                           onboardStep === 2 ? '人脸识别' : 
+                           onboardStep === 3 ? '填写资料' : 
+                           (onboardStep === 4 || onboardStep === 5) ? '培训考试' : 
+                           onboardStep === 6 ? '签署协议' : 
+                           onboardStep === 7 ? '补充资料' : '审核状态' }}
+                    </h1>
+                    <div class="w-6"></div>
+                </div>
+                
+                <!-- 进度条 (仅在流程中显示) -->
+                <div v-if="onboardStep >= 1 && onboardStep <= 7" class="px-4 py-3 bg-white border-b border-gray-50 flex items-center justify-between text-[10px] shrink-0 z-10">
+                    <div :class="`flex flex-col items-center font-bold ${onboardStep >= 1 ? 'text-blue-600' : 'text-gray-400'}`">
+                        <i data-lucide="shield-check" class="w-4 h-4 mb-1"></i> 核验
+                    </div>
+                    <div :class="`h-px w-6 ${onboardStep >= 3 ? 'bg-blue-600' : 'bg-gray-200'}`"></div>
+                    <div :class="`flex flex-col items-center font-bold ${onboardStep >= 3 ? 'text-blue-600' : 'text-gray-400'}`">
+                        <i data-lucide="file-text" class="w-4 h-4 mb-1"></i> 资料
+                    </div>
+                    <div :class="`h-px w-6 ${onboardStep >= 4 ? 'bg-blue-600' : 'bg-gray-200'}`"></div>
+                    <div :class="`flex flex-col items-center font-bold ${onboardStep >= 4 ? 'text-blue-600' : 'text-gray-400'}`">
+                        <i data-lucide="monitor-play" class="w-4 h-4 mb-1"></i> 考试
+                    </div>
+                    <div :class="`h-px w-6 ${onboardStep >= 6 ? 'bg-blue-600' : 'bg-gray-200'}`"></div>
+                    <div :class="`flex flex-col items-center font-bold ${onboardStep >= 6 ? 'text-blue-600' : 'text-gray-400'}`">
+                        <i data-lucide="pen-tool" class="w-4 h-4 mb-1"></i> 签署
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto hide-scrollbar bg-gray-50 relative pb-20">
+                    
+                    <!-- Step 0: 介绍落地页 -->
+                    <div v-if="onboardStep === 0" class="bg-white min-h-full flex flex-col relative">
+                        <div class="bg-blue-600 px-6 pt-8 pb-16 text-white text-center">
+                            <h2 class="text-3xl font-black italic mb-2 tracking-widest">加入保通</h2>
+                            <p class="text-blue-200 text-sm">做互联网保险领军人</p>
+                        </div>
+                        <div class="px-4 -mt-8 flex-1 flex flex-col">
+                            <div class="bg-white rounded-xl shadow-lg p-5 mb-6">
+                                <h3 class="font-bold text-gray-800 mb-4 flex items-center"><span class="w-1 h-3 bg-blue-600 rounded-sm mr-2"></span>入职流程</h3>
+                                <div class="flex flex-col space-y-4 text-sm text-gray-600">
+                                    <div class="flex items-center"><div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3 font-bold">1</div> 身份核验</div>
+                                    <div class="flex items-center"><div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3 font-bold">2</div> 填写基本信息</div>
+                                    <div class="flex items-center"><div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3 font-bold">3</div> 培训与考试</div>
+                                    <div class="flex items-center"><div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3 font-bold">4</div> 签署电子合同</div>
+                                    <div class="flex items-center"><div class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mr-3 font-bold">5</div> 补充重要资料</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+                                <h3 class="font-bold text-gray-800 mb-3 text-sm">常见问题</h3>
+                                <div class="space-y-3 text-xs">
+                                    <div class="text-gray-500">Q: 申请签约人的条件？<br><span class="text-gray-800">A: 20-60周岁，高中或中专以上，未在其他机构执业登记。</span></div>
+                                    <div class="text-gray-500">Q: 如何查询从业资质？<br><span class="text-blue-500 cursor-pointer" @click="showToast('已复制：https://www.insurcloud.com.cn')">点此复制中介云平台网址查询</span></div>
+                                    <div class="text-gray-500">Q: 什么是金事通认证？<br><span class="text-blue-500 cursor-pointer" @click="showToast('打开金事通操作指南')">查看金事通操作流程</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-0 w-full bg-white p-4 border-t border-gray-100 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                            <label class="flex items-start text-[10px] text-gray-500 mb-3 cursor-pointer">
+                                <input type="checkbox" v-model="onboardAgree" class="mt-0.5 mr-2 accent-blue-600">
+                                <span>本人同意保通保险代理有限公司对本人以往从业经历进行查询核实。</span>
+                            </label>
+                            <button class="w-full py-3 rounded-full font-bold text-white shadow-md transition-colors" 
+                                    :class="onboardAgree ? 'bg-blue-600 shadow-blue-200' : 'bg-gray-300'"
+                                    @click="startOnboard">
+                                准备好了，立即申请
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: 身份核验 -->
+                    <div v-if="onboardStep === 1" class="bg-white min-h-full p-4 flex flex-col">
+                        <h2 class="text-lg font-bold text-gray-800 mb-1">请上传您的身份信息</h2>
+                        <p class="text-xs text-gray-500 mb-6">您的身份信息将用于入职审核</p>
+
+                        <div class="flex space-x-6 border-b border-gray-200 mb-6">
+                            <div class="pb-2 border-b-2 border-blue-600 text-blue-600 text-sm font-bold relative">
+                                上传身份证照片
+                                <span class="absolute -top-2 -right-6 bg-red-500 text-white text-[8px] px-1 rounded-sm scale-75">推荐</span>
+                            </div>
+                            <div class="pb-2 text-gray-500 text-sm font-medium">填写身份信息</div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-blue-50 border border-blue-100 rounded-xl aspect-[1.6/1] flex flex-col items-center justify-center text-blue-400 cursor-pointer active:bg-blue-100" @click="simulateIdUpload">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mb-2 shadow-md">
+                                    <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <span class="text-xs font-medium">上传人像面</span>
+                            </div>
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl aspect-[1.6/1] flex flex-col items-center justify-center text-gray-400 cursor-pointer active:bg-gray-100" @click="simulateIdUpload">
+                                <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center mb-2">
+                                    <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                                </div>
+                                <span class="text-xs font-medium">上传国徽面</span>
+                            </div>
+                        </div>
+
+                        <div v-if="idUploaded" class="bg-gray-50 rounded-xl p-4 animate-fade-in flex-1">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-sm font-bold">请确认身份信息</h3>
+                                <span class="text-xs text-blue-600 cursor-pointer" @click="showToast('弹出信息修改框')">信息有误？</span>
+                            </div>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex"><span class="text-gray-500 w-24">证件类型</span><span class="text-gray-800 font-medium">身份证</span></div>
+                                <div class="flex"><span class="text-gray-500 w-24">证件号码</span><span class="text-gray-800 font-medium">371202199511190010</span></div>
+                                <div class="flex"><span class="text-gray-500 w-24">姓名</span><span class="text-gray-800 font-medium">刘博洋</span></div>
+                                <div class="flex"><span class="text-gray-500 w-24">性别</span><span class="text-gray-800 font-medium">男</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-auto pt-6">
+                            <button class="w-full py-3 rounded-full font-bold text-white shadow-md transition-colors" 
+                                    :class="idUploaded ? 'bg-blue-600 shadow-blue-200' : 'bg-gray-300'"
+                                    :disabled="!idUploaded"
+                                    @click="goToFaceRec">
+                                下一步：人脸识别
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: 人脸识别 -->
+                    <div v-if="onboardStep === 2" class="bg-white min-h-full flex flex-col items-center justify-center p-6 relative">
+                        <h2 class="text-xl font-bold text-gray-800 mb-2">实人认证</h2>
+                        <p class="text-sm text-gray-500 text-center mb-8">为保障您的账号与资产安全，请确保由本人进行人脸识别操作。</p>
+                        
+                        <div class="w-48 h-48 rounded-full border-4 border-blue-100 relative overflow-hidden mb-8 shadow-inner flex items-center justify-center bg-gray-50">
+                            <!-- 模拟扫描动画 -->
+                            <i data-lucide="user" class="w-24 h-24 text-gray-300"></i>
+                            <div v-if="isScanning" class="absolute inset-0 z-10 bg-blue-500/10">
+                                <div class="scan-line"></div>
+                            </div>
+                        </div>
+
+                        <label class="flex items-start text-xs text-gray-500 mb-8 cursor-pointer w-full">
+                            <input type="checkbox" v-model="faceAgree" class="mt-0.5 mr-2 accent-blue-600 shrink-0">
+                            <span>我已阅读并同意采集人脸图像用于认证服务，充分理解并同意《认证服务及个人信息处理规则》</span>
+                        </label>
+
+                        <button class="w-full py-3 rounded-full font-bold text-white shadow-md transition-colors mt-auto" 
+                                :class="faceAgree ? 'bg-blue-600 shadow-blue-200' : 'bg-gray-300'"
+                                :disabled="!faceAgree || isScanning"
+                                @click="startFaceScan">
+                            {{ isScanning ? '识别中...' : '同意授权并开始识别' }}
+                        </button>
+                    </div>
+
+                    <!-- Step 3: 填写资料 -->
+                    <div v-if="onboardStep === 3" class="min-h-full flex flex-col">
+                        <div class="p-4 space-y-3">
+                            <!-- 基本信息 -->
+                            <div class="bg-white p-4 rounded-xl shadow-sm">
+                                <h3 class="font-bold text-sm text-gray-800 mb-3 border-l-4 border-blue-600 pl-2">基本信息</h3>
+                                <div class="space-y-4">
+                                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span class="text-sm text-gray-600 w-24">常驻地</span>
+                                        <div class="flex-1 text-right text-sm font-medium text-gray-800 flex justify-end items-center cursor-pointer" @click="showToast('选择省市区')">
+                                            {{onboardForm.residence}} <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300 ml-1"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-start border-b border-gray-50 pb-2">
+                                        <span class="text-sm text-gray-600 w-24 mt-1">详细地址</span>
+                                        <input type="text" v-model="onboardForm.address" placeholder="街道/小区/楼栋号" class="flex-1 text-right outline-none text-sm bg-transparent placeholder-gray-300 h-6">
+                                    </div>
+                                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span class="text-sm text-gray-600 w-24">加入公司</span>
+                                        <div class="flex-1 text-right text-sm font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                                            {{onboardForm.company}}
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 w-24">政治面貌</span>
+                                        <select v-model="onboardForm.politics" class="flex-1 text-right outline-none text-sm bg-transparent appearance-none text-gray-800 font-medium" dir="rtl">
+                                            <option>群众</option>
+                                            <option>中共党员</option>
+                                            <option>共青团员</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 工作经历 -->
+                            <div class="bg-white p-4 rounded-xl shadow-sm">
+                                <h3 class="font-bold text-sm text-gray-800 mb-3 border-l-4 border-blue-600 pl-2">从业经历 (如实填写)</h3>
+                                <div class="flex justify-between items-center border-b border-gray-50 pb-3 mb-3">
+                                    <span class="text-sm text-gray-600">是否有工作经历</span>
+                                    <div class="flex bg-gray-100 rounded p-1">
+                                        <button :class="`px-4 py-1 text-xs rounded ${onboardForm.hasWorkExp === '有' ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-gray-500'}`" @click="onboardForm.hasWorkExp = '有'">有</button>
+                                        <button :class="`px-4 py-1 text-xs rounded ${onboardForm.hasWorkExp === '无' ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-gray-500'}`" @click="onboardForm.hasWorkExp = '无'">无</button>
+                                    </div>
+                                </div>
+
+                                <div v-if="onboardForm.hasWorkExp === '有'" class="space-y-4 animate-fade-in border border-blue-100 bg-blue-50/30 p-3 rounded-lg">
+                                    <div v-for="(exp, index) in onboardForm.workExps" :key="index" class="space-y-3">
+                                        <div class="flex justify-between items-center text-xs font-bold text-gray-500">
+                                            经历 {{index + 1}}
+                                            <i v-if="onboardForm.workExps.length > 1" data-lucide="trash-2" class="w-4 h-4 text-red-400 cursor-pointer" @click="onboardForm.workExps.splice(index,1)"></i>
+                                        </div>
+                                        <div class="flex justify-between items-center border-b border-gray-200 pb-1">
+                                            <span class="text-sm text-gray-600">起止时间</span>
+                                            <span class="text-sm text-gray-400 cursor-pointer" @click="showToast('选择日期')">2020.01 - 2023.01 <i data-lucide="calendar" class="w-3 h-3 inline"></i></span>
+                                        </div>
+                                        <div class="flex justify-between items-center border-b border-gray-200 pb-1">
+                                            <span class="text-sm text-gray-600">所在行业</span>
+                                            <select class="text-right outline-none text-sm bg-transparent text-gray-800" dir="rtl">
+                                                <option>保险</option><option>银行/金融</option><option>房地产</option><option>其他</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <input type="text" placeholder="填写公司及岗位 (100字内)" class="w-full outline-none text-sm bg-white border border-gray-200 rounded p-2 mt-1">
+                                        </div>
+                                    </div>
+                                    <div class="text-center">
+                                        <button class="text-xs text-blue-600 font-medium" @click="onboardForm.workExps.push({})">+ 添加一段经历</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <span class="text-sm text-gray-600 block mb-2">奖惩记录</span>
+                                    <input type="text" v-model="onboardForm.punishment" placeholder="如实填写，若无请填无" class="w-full outline-none text-sm bg-gray-50 border border-gray-100 rounded p-2">
+                                </div>
+                            </div>
+
+                            <!-- 邀请人与联系方式 -->
+                            <div class="bg-white p-4 rounded-xl shadow-sm mb-6">
+                                <h3 class="font-bold text-sm text-gray-800 mb-3 border-l-4 border-blue-600 pl-2">联系方式与推荐人</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span class="text-sm text-gray-600">有无邀请人</span>
+                                        <div class="flex bg-gray-100 rounded p-1">
+                                            <button :class="`px-3 py-1 text-xs rounded ${onboardForm.hasInviter === '有' ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-gray-500'}`" @click="onboardForm.hasInviter = '有'">有</button>
+                                            <button :class="`px-3 py-1 text-xs rounded ${onboardForm.hasInviter === '无' ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-gray-500'}`" @click="onboardForm.hasInviter = '无'">无</button>
+                                        </div>
+                                    </div>
+                                    <div v-if="onboardForm.hasInviter === '有'" class="flex justify-between items-center border-b border-gray-50 pb-2 animate-fade-in">
+                                        <span class="text-sm text-gray-600 w-24">邀请人工号</span>
+                                        <input type="text" v-model="onboardForm.inviterId" placeholder="请输入工号" class="flex-1 text-right outline-none text-sm bg-transparent">
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-center border-b border-gray-50 pb-2 pt-2">
+                                        <span class="text-sm text-gray-600 w-24">手机号</span>
+                                        <input type="text" v-model="onboardForm.phone" class="flex-1 text-right outline-none text-sm font-medium text-gray-800 bg-transparent">
+                                    </div>
+                                    <div class="flex justify-between items-center border-b border-gray-50 pb-2">
+                                        <span class="text-sm text-gray-600 w-16">验证码</span>
+                                        <input type="text" v-model="onboardForm.code" placeholder="输入验证码" class="flex-1 text-right outline-none text-sm bg-transparent pr-2">
+                                        <button class="text-xs text-blue-600 border-l border-gray-200 pl-2 whitespace-nowrap" @click="showToast('验证码已发送')">获取验证码</button>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm text-gray-600 w-24">电子邮箱</span>
+                                        <input type="email" v-model="onboardForm.email" placeholder="选填" class="flex-1 text-right outline-none text-sm bg-transparent">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 mt-auto bg-white border-t border-gray-100 shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full shadow-md" @click="submitInfo">提交并进入下一步</button>
+                        </div>
+                    </div>
+
+                    <!-- 合规声明弹窗 -->
+                    <transition name="fade">
+                        <div v-if="showCommitment" class="absolute inset-0 bg-black/60 z-50 flex items-center justify-center p-6">
+                            <div class="bg-white rounded-2xl w-full max-h-[80%] flex flex-col overflow-hidden">
+                                <div class="p-4 border-b border-gray-100 text-center font-bold text-lg text-gray-800 shrink-0">合规承诺声明</div>
+                                <div class="p-4 overflow-y-auto text-sm text-gray-600 space-y-2 leading-relaxed">
+                                    <p>本人承诺，不存在以下情况：</p>
+                                    <p>1、因贪污、受贿、侵占财产、挪用财产或者破坏社会主义市场经济秩序，被判处刑罚；</p>
+                                    <p>2、被金融监管机构决定在一定期限内禁止进入金融行业，期限未满的；</p>
+                                    <p>3、因严重失信行为被确定为失信联合惩戒对象，或近5年内具严重失信不良记录的；</p>
+                                    <p>4、法律、行政法规和保监机构规定的其他情形；</p>
+                                    <p>5、被列入黑名单，或有欺诈不诚信行为记录的；</p>
+                                    <p>6、涉嫌非法集资的；</p>
+                                    <p>7、同时兼职销售非保险金融产品的；</p>
+                                    <p>8、从事过传销的。</p>
+                                </div>
+                                <div class="p-4 border-t border-gray-100 flex space-x-3 shrink-0">
+                                    <button class="flex-1 border border-gray-300 text-gray-600 py-2.5 rounded-full font-medium text-sm" @click="showCommitment = false">取消</button>
+                                    <button class="flex-1 bg-blue-600 text-white py-2.5 rounded-full font-bold text-sm shadow-md" @click="confirmCommitment">本人确认并承诺</button>
+                                </div>
+                            </div>
+                        </div>
+                    </transition>
+
+                    <!-- Step 4: 培训课程 -->
+                    <div v-if="onboardStep === 4" class="min-h-full bg-white flex flex-col p-4">
+                        <div class="bg-blue-50 text-blue-800 p-3 rounded-lg text-xs mb-4 flex items-start">
+                            <i data-lucide="info" class="w-4 h-4 mr-2 shrink-0 mt-0.5"></i>
+                            根据监管要求，您必须完成以下 9 节基础视频课程的学习，并通过结业考试方可签约。
+                        </div>
+
+                        <h3 class="font-bold text-gray-800 mb-3 text-sm">必修课程 (9/9已学完)</h3>
+                        <div class="space-y-3 flex-1 overflow-y-auto hide-scrollbar pb-6">
+                            <div v-for="(course, i) in ['公司及平台介绍', '保险基础知识', '法律合规及职业道德1-1', '法律合规及职业道德1-2', '法律合规及职业道德2', '法律合规及职业道德3', '基础销售技能', '互联网展业基础', '品牌合规与风险防范']" :key="i" 
+                                 class="flex items-center justify-between p-3 border border-gray-100 rounded-lg bg-gray-50">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mr-3"><i data-lucide="play" class="w-3 h-3"></i></div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-800 w-48 truncate">{{course}}</div>
+                                        <div class="text-[10px] text-gray-500 mt-0.5">时长 15:00</div>
+                                    </div>
+                                </div>
+                                <span class="text-xs text-green-500 bg-green-50 px-2 py-0.5 rounded border border-green-100">已学完</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-gray-100 mt-auto">
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full shadow-md" @click="startExam">去考试</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: 考试 -->
+                    <div v-if="onboardStep === 5" class="min-h-full bg-white flex flex-col p-6">
+                        <div class="flex justify-between items-center mb-8">
+                            <span class="text-sm text-gray-500">入职结业考试</span>
+                            <span class="text-sm font-bold text-blue-600">1 / 13 题</span>
+                        </div>
+
+                        <div class="mb-8">
+                            <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded font-bold mr-2">单选</span>
+                            <span class="text-lg font-bold text-gray-800 leading-relaxed">
+                                以下哪种展业行为属于严重违规，会被立刻解约？
+                            </span>
+                        </div>
+
+                        <div class="space-y-4 text-sm font-medium text-gray-700">
+                            <div class="p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50" @click="answerQuestion(false)">
+                                A. 向客户详细讲解免责条款
+                            </div>
+                            <div class="p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50" @click="answerQuestion(false)">
+                                B. 协助客户进行智能预核保
+                            </div>
+                            <div class="p-4 border-2 border-blue-500 bg-blue-50 text-blue-700 rounded-xl cursor-pointer relative" @click="answerQuestion(true)">
+                                C. 向客户承诺高额返佣及夸大保单收益
+                                <i data-lucide="check-circle-2" class="absolute right-4 top-4 w-5 h-5 text-blue-500"></i>
+                            </div>
+                            <div class="p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50" @click="answerQuestion(false)">
+                                D. 推荐客户使用App进行在线理赔
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-8 text-center text-xs text-gray-400">
+                            选择正确答案将自动进入下一题
+                        </div>
+                    </div>
+
+                    <!-- Step 6: 签署协议 -->
+                    <div v-if="onboardStep === 6" class="min-h-full bg-white flex flex-col">
+                        <div class="bg-gray-50 p-4 border-b border-gray-200 shrink-0">
+                            <h2 class="text-lg font-bold text-gray-800">电子合同签署</h2>
+                            <p class="text-xs text-gray-500 mt-1">请仔细阅读以下协议并完成手写签名</p>
+                        </div>
+                        
+                        <div class="flex-1 p-4 overflow-y-auto hide-scrollbar bg-gray-100">
+                            <div class="bg-white p-4 rounded text-xs text-gray-600 leading-relaxed shadow-sm">
+                                <h3 class="font-bold text-sm text-center text-gray-800 mb-4 border-b pb-2">保通保险代理有限公司个人代理合同</h3>
+                                <p class="mb-2 font-bold">欢迎申请加入保通：</p>
+                                <p class="mb-4">甲方（保通）与乙方（代理人）本着自愿、平等、互利的原则，就代理销售保险产品事宜达成如下协议...</p>
+                                <p class="text-center text-gray-400 my-4">[ 协议正文共 12 页，此处省略 ]</p>
+                                <p class="font-bold mb-2">附件列表（点击查看）：</p>
+                                <ul class="text-blue-500 space-y-2 underline underline-offset-2">
+                                    <li @click="showToast('打开附件一')">附件一：《代理合同申请书》</li>
+                                    <li @click="showToast('打开附件二')">附件二：《兼职情况申明书》</li>
+                                    <li @click="showToast('打开附件三')">附件三：《抵制非法集资承诺书》</li>
+                                    <li @click="showToast('打开附件四')">附件四：《诚信展业承诺书》</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="p-4 bg-white border-t border-gray-100 shadow-[0_-5px_15px_rgba(0,0,0,0.05)] shrink-0 pb-6">
+                            <label class="flex items-start text-[10px] text-gray-500 mb-4 cursor-pointer">
+                                <input type="checkbox" v-model="signAgree" class="mt-0.5 mr-2 accent-blue-600 shrink-0">
+                                <span class="leading-tight">我已阅读并同意签署《代理合同》及全部附件、补充协议内容，充分理解相关权责。</span>
+                            </label>
+                            <button class="w-full py-3 rounded-full font-bold text-white shadow-md transition-colors flex items-center justify-center" 
+                                    :class="signAgree ? 'bg-blue-600 shadow-blue-200' : 'bg-gray-300'"
+                                    :disabled="!signAgree"
+                                    @click="openSignaturePad">
+                                <i data-lucide="pen-tool" class="w-4 h-4 mr-2"></i> 我已阅读全部内容并签名
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 7: 补充资料 -->
+                    <div v-if="onboardStep === 7" class="min-h-full bg-white flex flex-col p-4">
+                        <h2 class="text-lg font-bold text-gray-800 mb-1">最后一步：资料补充</h2>
+                        <p class="text-xs text-gray-500 mb-6">为顺利完成金事通执业登记，请补充以下必要信息。</p>
+
+                        <div class="space-y-6">
+                            <!-- 半身照上传 -->
+                            <div>
+                                <h3 class="text-sm font-bold text-gray-800 mb-3"><span class="text-red-500 mr-1">*</span>上传个人半身照</h3>
+                                <div class="flex space-x-4">
+                                    <div class="w-32 h-40 bg-blue-50 border border-blue-200 border-dashed rounded-lg flex flex-col items-center justify-center text-blue-500 cursor-pointer" @click="showToast('调起相机自拍')">
+                                        <i data-lucide="plus" class="w-6 h-6 mb-2"></i>
+                                        <span class="text-xs font-medium">点击拍照</span>
+                                    </div>
+                                    <div class="w-32 h-40 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 relative">
+                                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Professional" class="w-full h-full object-cover opacity-50 grayscale">
+                                        <div class="absolute bottom-0 w-full bg-black/50 text-white text-[10px] text-center py-1">照片示例 (免冠清晰)</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 学历选择 -->
+                            <div class="border-t border-gray-100 pt-4">
+                                <h3 class="text-sm font-bold text-gray-800 mb-3"><span class="text-red-500 mr-1">*</span>最高学历</h3>
+                                <select class="w-full border border-gray-200 rounded-lg px-3 py-3 text-sm outline-none text-gray-800 bg-white">
+                                    <option value="" disabled selected>请选择您的最高学历</option>
+                                    <option>博士</option>
+                                    <option>硕士/研究生</option>
+                                    <option>本科</option>
+                                    <option>大专</option>
+                                    <option>高中及中专</option>
+                                    <option>初中及以下</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-auto pt-8">
+                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full shadow-md shadow-blue-200" @click="submitOnboardFinal">提交入职审核</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 8: 审核中状态页 -->
+                    <div v-if="onboardStep === 8" class="min-h-full bg-[#f4f6f9] flex flex-col relative pb-8">
+                        <div class="bg-blue-600 h-32 w-full absolute top-0 rounded-b-[40px]"></div>
+                        
+                        <div class="px-4 mt-8 relative z-10">
+                            <!-- 核心状态卡片 -->
+                            <div class="bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center mb-6">
+                                <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
+                                    <i data-lucide="file-clock" class="w-8 h-8"></i>
+                                </div>
+                                <h2 class="text-xl font-bold text-gray-800 mb-2">资料初审中</h2>
+                                <p class="text-xs text-gray-500 text-center leading-relaxed bg-gray-50 p-3 rounded-lg">
+                                    您已成功提交入职申请，系统正在进行资料初审，预计 <span class="text-blue-600 font-bold">1-2个工作日</span>。<br>若初审通过，将进入分公司人工审核环节。
+                                </p>
+                            </div>
+
+                            <!-- 待办/补充任务 -->
+                            <div class="space-y-3 mb-6">
+                                <div class="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm cursor-pointer" @click="showToast('跳转微信微客站小程序联系内勤')">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center mr-3"><i data-lucide="message-circle" class="w-5 h-5"></i></div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800">分公司内勤老师企微</div>
+                                            <div class="text-[10px] text-gray-400">入职问题在线沟通</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1 rounded-full">去联系</span>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm cursor-pointer" @click="showToast('打开文件选择器上传学历')">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mr-3"><i data-lucide="graduation-cap" class="w-5 h-5"></i></div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800">学历证明补充</div>
+                                            <div class="text-[10px] text-gray-400">加快审核通过率</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-orange-600 font-medium bg-orange-50 px-3 py-1 rounded-full">去上传</span>
+                                </div>
+
+                                <div class="bg-white rounded-xl p-4 flex items-center justify-between shadow-sm cursor-pointer" @click="showToast('进入银行卡绑定页')">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center mr-3"><i data-lucide="credit-card" class="w-5 h-5"></i></div>
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800">佣金银行卡绑定</div>
+                                            <div class="text-[10px] text-gray-400">用于后续佣金发放</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-purple-600 font-medium bg-purple-50 px-3 py-1 rounded-full">去绑定</span>
+                                </div>
+                            </div>
+
+                            <!-- 底部服务指引 -->
+                            <div class="flex justify-around text-center text-gray-600 border-t border-gray-200 pt-6 px-4">
+                                <div class="flex flex-col items-center cursor-pointer" @click="showToast('关注公众号获取进度推送')">
+                                    <div class="w-10 h-10 bg-white rounded-full shadow mb-2 flex items-center justify-center"><i data-lucide="bell" class="w-4 h-4"></i></div>
+                                    <span class="text-xs">关注进度</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer" @click="goToPage('onlineChat')">
+                                    <div class="w-10 h-10 bg-white rounded-full shadow mb-2 flex items-center justify-center"><i data-lucide="headphones" class="w-4 h-4"></i></div>
+                                    <span class="text-xs">在线咨询</span>
+                                </div>
+                                <div class="flex flex-col items-center cursor-pointer" @click="showToast('呼叫 400-100-0550')">
+                                    <div class="w-10 h-10 bg-white rounded-full shadow mb-2 flex items-center justify-center"><i data-lucide="phone-call" class="w-4 h-4"></i></div>
+                                    <span class="text-xs">拨打电话</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </transition>
+
+        <!-- 签名画板弹窗模拟 -->
+        <transition name="fade">
+            <div v-if="showSignaturePad" class="absolute inset-0 z-[100] bg-white flex flex-col">
+                <div class="h-12 flex items-center justify-between px-4 border-b border-gray-100 shrink-0 bg-gray-50">
+                    <span class="text-gray-500 text-sm cursor-pointer" @click="showSignaturePad = false">取消</span>
+                    <h1 class="text-sm font-bold text-gray-800">请在虚线框内手写签名</h1>
+                    <span class="text-blue-600 text-sm cursor-pointer font-bold" @click="confirmSignature">完成</span>
+                </div>
+                <div class="flex-1 bg-white p-4 relative" @click="simulateDrawing">
+                    <div class="w-full h-full border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center relative overflow-hidden bg-gray-50/50">
+                        <span v-if="!isDrawn" class="text-gray-300 font-medium pointer-events-none">点击此处模拟签名</span>
+                        <!-- 签名笔迹模拟 -->
+                        <svg v-if="isDrawn" class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 300 200">
+                            <path d="M 50 100 Q 100 50, 150 120 T 250 80" stroke="#000" stroke-width="4" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- ==================== 培训中心 (Training - 独立页) ==================== -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'training'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="bg-blue-600 pt-14 pb-2 px-4 sticky top-0 z-20">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="cursor-pointer p-2 -ml-2 text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6"></i></span>
+                        <h1 class="text-xl font-bold text-white tracking-widest italic">星空培训</h1>
+                        <span class="cursor-pointer p-2 -mr-2 text-white" @click="goToPage('trainingMy')"><i data-lucide="user" class="w-5 h-5"></i></span>
+                    </div>
+                    <div class="bg-white/20 rounded-full flex items-center px-3 py-1.5 w-full cursor-pointer border border-white/30" @click="goToPage('search')">
+                        <i data-lucide="search" class="w-4 h-4 text-white mr-2"></i>
+                        <span class="text-sm text-white/80">搜索课程或讲师...</span>
+                    </div>
+                </div>
+                <div class="flex-1 overflow-y-auto pb-8">
+                    <div class="px-4 py-3 bg-white">
+                        <div class="rounded-xl overflow-hidden shadow-sm h-32 relative flex items-center p-4 bg-gradient-to-r from-teal-400 to-emerald-500 text-white cursor-pointer" @click="showToast('培训活动轮播')">
+                            <div class="z-10">
+                                <h2 class="text-xl font-bold mb-1">MDRT顶尖销售课</h2>
+                                <p class="text-xs bg-white/20 px-2 py-0.5 rounded inline-block">限时免费学习中</p>
+                            </div>
+                            <i data-lucide="graduation-cap" class="absolute right-4 w-20 h-20 opacity-20"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white px-4 pb-5 flex justify-between">
+                        <div class="flex flex-col items-center cursor-pointer" @click="customizationStep = 0; goToPage('trainingSmartCustomization')">
+                            <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="sparkles" class="w-6 h-6 text-blue-500"></i></div>
+                            <span class="text-xs text-gray-700">智能定制</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('trainingBootcamp')">
+                            <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="target" class="w-6 h-6 text-orange-500"></i></div>
+                            <span class="text-xs text-gray-700">训练营</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('trainingCertification')">
+                            <div class="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="medal" class="w-6 h-6 text-purple-500"></i></div>
+                            <span class="text-xs text-gray-700">认证中心</span>
+                        </div>
+                        <div class="flex flex-col items-center cursor-pointer" @click="goToPage('trainingLecturer')">
+                            <div class="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mb-2"><i data-lucide="mic-2" class="w-6 h-6 text-rose-500"></i></div>
+                            <span class="text-xs text-gray-700">大咖说</span>
+                        </div>
+                    </div>
+                    <div class="mt-2 bg-white p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-gray-800 text-sm border-l-4 border-blue-600 pl-2">推荐课程</h3>
+                            <span class="text-xs text-gray-400 flex items-center cursor-pointer" @click="goToPage('trainingCourses')">更多 <i data-lucide="chevron-right" class="w-3 h-3"></i></span>
+                        </div>
+                        <div class="space-y-3">
+                            <div v-for="i in 3" :key="i" class="flex border-b border-gray-50 pb-3 cursor-pointer" @click="goToPage('trainingDetail')">
+                                <div class="w-24 h-16 bg-gray-100 rounded mr-3 relative overflow-hidden">
+                                    <img :src="`https://picsum.photos/id/${10+i}/200/150`" class="w-full h-full object-cover">
+                                    <div class="absolute bottom-0 right-0 bg-black/60 text-white text-[8px] px-1">15:00</div>
+                                </div>
+                                <div class="flex-1 flex flex-col justify-between">
+                                    <div class="font-bold text-sm text-gray-800 leading-tight">开门红业绩翻倍秘籍：高净值客户拓客指南</div>
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-gray-400">1200人已学</span>
+                                        <span class="text-blue-500 bg-blue-50 px-2 py-0.5 rounded text-[10px]">销售技巧</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- 培训-智能定制 / 训练营 / 认证中心 / 课程中心 / 课程详情 / 讲师 / 我的学习 (占位，点击后 Toast 或简单页) -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingSmartCustomization'" class="absolute inset-0 z-50 bg-white flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">智能定制</h1></div>
+                <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                    <div class="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center mb-6"><i data-lucide="sparkles" class="w-16 h-16 text-blue-500"></i></div>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">专属课程私人定制</h2>
+                    <p class="text-sm text-gray-500 mb-10">只需完成5个小问题，AI将为您量身生成最适合的学习路径与课程。</p>
+                    <button class="bg-blue-600 text-white font-bold px-12 py-3 rounded-full shadow-md" @click="showToast('开始定制问卷')">开始定制</button>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingBootcamp'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">训练营</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="bg-white rounded-2xl shadow-sm p-4 cursor-pointer" @click="goToPage('trainingDetail')">
+                        <h2 class="text-base font-bold text-gray-800 mb-1">新晋团队长管理特训营 (3期)</h2>
+                        <p class="text-xs text-gray-500 mb-3">聚焦团队搭建、日常管理与绩效考核。</p>
+                        <div class="flex justify-between items-center border-t border-gray-50 pt-3"><span class="text-xs text-gray-400">已有 450 人加入</span><button class="bg-orange-500 text-white text-xs font-bold px-4 py-1.5 rounded-full">加入学习</button></div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingCertification'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">认证中心</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-500 rounded-2xl p-5 text-white shadow-md cursor-pointer" @click="goToPage('trainingDetail')">
+                        <h2 class="text-lg font-bold mb-1">重疾险达人认证</h2>
+                        <p class="text-xs text-purple-100 mb-4">掌握重疾核保与理赔核心，成为专业重疾顾问</p>
+                        <button class="bg-white text-purple-600 font-bold px-4 py-1.5 rounded-full text-sm">去考证</button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingCourses'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">课程中心</h1></div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div v-for="i in 4" :key="i" class="flex border-b border-gray-50 pb-3 cursor-pointer" @click="goToPage('trainingDetail')">
+                        <div class="w-24 h-16 bg-gray-100 rounded mr-3 relative overflow-hidden"><img :src="`https://picsum.photos/id/${20+i}/200/150`" class="w-full h-full object-cover"><div class="absolute bottom-0 right-0 bg-black/60 text-white text-[8px] px-1">15:00</div></div>
+                        <div class="flex-1"><div class="font-bold text-sm text-gray-800 leading-tight">开门红业绩翻倍秘籍</div><div class="text-xs text-gray-400 mt-1">1200人已学</div></div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingDetail'" class="absolute inset-0 z-50 bg-white flex flex-col">
+                <div class="h-56 bg-black relative mt-12 flex flex-col justify-between">
+                    <div class="flex justify-between items-center p-3 z-10 bg-gradient-to-b from-black/60 to-transparent"><span class="cursor-pointer text-white" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6"></i></span><span class="cursor-pointer text-white" @click="showToast('分享课程')"><i data-lucide="share-2" class="w-5 h-5"></i></span></div>
+                    <div class="absolute inset-0 flex items-center justify-center"><div class="w-12 h-12 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer" @click="showToast('播放视频')"><i data-lucide="play" class="w-6 h-6 text-white ml-1"></i></div></div>
+                    <div class="h-1 bg-gray-600 w-full"><div class="h-full bg-blue-500 w-1/3 relative"></div></div>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <h1 class="text-lg font-bold text-gray-800">开门红业绩翻倍秘籍：高净值客户拓客指南</h1>
+                    <div class="text-xs text-gray-500 mt-2">共 5 课时 | 12.5万 人已学习</div>
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 mt-4">学完所有章节视频且进度达到 100% 即可获得完课证书。</div>
+                </div>
+                <div class="border-t border-gray-100 p-3 flex justify-between items-center bg-white"><div class="flex flex-col items-center text-gray-500 cursor-pointer" @click="showToast('已收藏')"><i data-lucide="star" class="w-5 h-5 mb-0.5"></i><span class="text-[10px]">收藏</span></div><button class="flex-1 bg-blue-600 text-white font-bold py-2.5 rounded-full shadow-md ml-2" @click="showToast('继续学习')">继续学习</button></div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingLecturer'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">讲师中心</h1></div>
+                <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                    <div v-for="tutor in tutorDataList" :key="tutor.id" class="bg-white rounded-xl shadow-sm p-4 cursor-pointer" @click="showToast('进入讲师详情')">
+                        <div class="flex items-start"><img :src="tutor.avatar" class="w-12 h-12 rounded-full border border-gray-100 mr-3"><div class="flex-1"><h3 class="font-bold text-gray-800">{{tutor.name}}</h3><div class="text-xs text-gray-500 mt-1">人气 9.8万 · 课程 15</div></div><button class="text-xs text-blue-600 border border-blue-600 px-3 py-0.5 rounded-full">+ 关注</button></div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'trainingMy'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">我的学习</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="bg-white p-4 mb-2"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">本月学习概览</h3><button class="bg-blue-50 text-blue-600 text-xs font-bold px-4 py-1.5 rounded-full" @click="showToast('打卡成功！')">学习打卡</button></div><div class="flex divide-x divide-gray-100 text-center"><div class="flex-1"><div class="text-2xl font-black text-gray-800 mb-1">12 <span class="text-xs font-normal text-gray-500">天</span></div><div class="text-xs text-gray-500">打卡天数</div></div><div class="flex-1"><div class="text-2xl font-black text-gray-800 mb-1">4.5 <span class="text-xs font-normal text-gray-500">时</span></div><div class="text-xs text-gray-500">学习时长</div></div></div></div>
+                    <div class="bg-white p-4"><h3 class="font-bold text-gray-800 mb-4">我的课程</h3><div class="flex items-center cursor-pointer" @click="goToPage('trainingDetail')"><div class="w-24 h-16 bg-gray-100 rounded mr-3 overflow-hidden"><img src="https://picsum.photos/id/21/200/150" class="w-full h-full object-cover"></div><div class="flex-1"><div class="font-bold text-sm text-gray-800 mb-2">基础销售技能特训营</div><div class="text-xs text-blue-500 font-medium">已学 40%</div></div><button class="bg-blue-50 text-blue-600 text-xs px-3 py-1 rounded-full border border-blue-100">继续学习</button></div></div>
+                </div>
+            </div>
+        </transition>
+
+        <!-- 计划书子页：我的计划书 / 产品PK / 分红实现率 / 查保司 / 新建计划书 / 计划书详情 -->
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'myPlans'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">我的计划书</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div v-for="p in myPlansList" :key="p.id" class="bg-white rounded-xl p-4 shadow-sm mb-3 cursor-pointer" @click="goToPage('planDetail')">
+                        <div class="font-bold text-gray-800">{{p.title}}</div>
+                        <div class="text-xs text-gray-500 mt-1">{{p.date}} · {{p.type}} · 首年保费 ¥{{p.premium}}</div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'productPK'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">产品 PK</h1></div>
+                <div class="flex-1 flex flex-col items-center justify-center p-6 text-gray-500"><i data-lucide="swords" class="w-12 h-12 mb-4 opacity-30"></i><p class="text-sm">添加产品进行对比（最多6款）</p></div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'dividendRates'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">分红实现率</h1></div>
+                <div class="flex-1 flex flex-col items-center justify-center p-6 text-gray-500"><i data-lucide="percent" class="w-12 h-12 mb-4 opacity-30"></i><p class="text-sm">各保司分红实现率查询</p></div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'companyList'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">查保司</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div v-for="c in companies" :key="c.name" class="bg-white rounded-xl p-4 shadow-sm mb-3">
+                        <div class="font-bold text-gray-800">{{c.initial}} {{c.name}}</div>
+                        <div class="text-xs text-gray-500 mt-1">{{c.type}} · 偿付能力{{c.solvency}} · 综合收益率 {{c.yield}}</div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'planCreate'" class="absolute inset-0 z-50 bg-[#f4f6f9] flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">新建计划书</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="bg-white rounded-xl p-4 shadow-sm mb-3">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3">被保人信息</h3>
+                        <div class="space-y-2 text-sm"><div class="flex justify-between"><span class="text-gray-500">姓名</span><span class="font-medium">{{planConfig.insuredName}}</span></div><div class="flex justify-between"><span class="text-gray-500">性别</span><span class="font-medium">{{planConfig.insuredSex}}</span></div></div>
+                    </div>
+                    <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-full shadow-md" @click="handleGeneratePlan">生成计划书</button>
+                </div>
+            </div>
+        </transition>
+        <transition name="slide-in-right">
+            <div v-if="activePage === 'planDetail'" class="absolute inset-0 z-50 bg-white flex flex-col">
+                <div class="h-12 flex items-center px-4 bg-white border-b border-gray-100 shrink-0 mt-12"><span class="cursor-pointer p-2 -ml-2" @click="goBack"><i data-lucide="chevron-left" class="w-6 h-6 text-gray-800"></i></span><h1 class="text-base font-bold absolute left-1/2 transform -translate-x-1/2">个人保障方案</h1></div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="bg-gray-50 rounded-xl p-4 mb-4" v-if="myPlansList.length">
+                        <div class="font-bold text-gray-800">{{myPlansList[0].title}}</div>
+                        <div class="text-xs text-gray-500 mt-1">被保人 {{myPlansList[0].name}} · 性别 {{myPlansList[0].sex}} · 年龄 {{myPlansList[0].age}} · 首年保费 ¥{{myPlansList[0].premium}}</div>
+                    </div>
+                    <p class="text-xs text-gray-500">计划书详情、产品责任、条款及导出分享等</p>
+                </div>
+            </div>
+        </transition>
+
+        <!-- 全局 Toast 提示 -->
+        <transition name="toast">
+            <div v-if="toastMessage" class="absolute top-1/3 left-1/2 transform -translate-x-1/2 z-[1000] bg-gray-800/90 backdrop-blur text-white px-6 py-3 rounded-lg text-sm font-medium shadow-2xl whitespace-nowrap">
+                {{ toastMessage }}
+            </div>
+        </transition>
+
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
+
+        createApp({
+            setup() {
+                // 页面路由与Tab管理
+                const activePage = ref('main'); 
+                const currentTab = ref('home'); 
+                const pageStack = ref([]); 
+                
+                // 辅助UI状态
+                const isDarkStatus = computed(() => {
+                    if (activePage.value === 'main' && currentTab.value === 'home') return true;
+                    if (activePage.value === 'main' && currentTab.value === 'mprc') return true;
+                    if (activePage.value === 'productDetail') return true;
+                    if (activePage.value === 'planDetail') return true;
+                    if (activePage.value === 'tutorList') return false;
+                    if (activePage.value === 'companyIntro') return true;
+                    if (activePage.value === 'training') return true;
+                    if (activePage.value === 'trainingDetail') return true;
+                    return false;
+                });
+                
+                const toastMessage = ref('');
+                let toastTimer = null;
+
+                const showToast = (msg) => {
+                    toastMessage.value = msg;
+                    if (toastTimer) clearTimeout(toastTimer);
+                    toastTimer = setTimeout(() => { toastMessage.value = ''; }, 2000);
+                };
+
+                const goToPage = (page, data = null) => {
+                    pageStack.value.push(activePage.value);
+                    if (data && page === 'productDetail') {
+                        currentProduct.value = data;
+                    }
+                    if (page === 'search') {
+                        isAIChatMode.value = false;
+                        searchQuery.value = '';
+                        hasSearched.value = false;
+                    }
+                    activePage.value = page;
+                };
+
+                const goBack = () => {
+                    if (pageStack.value.length > 0) {
+                        activePage.value = pageStack.value.pop();
+                    } else {
+                        activePage.value = 'main';
+                    }
+                };
+
+                // =============== 核心数据源 ===============
+                const tabs = [
+                    { id: 'home', name: '首页', icon: 'cloud-lightning' },
+                    { id: 'products', name: '产品', icon: 'shield-check' },
+                    { id: 'mprc', name: 'MPRC', icon: 'infinity' }, 
+                    { id: 'plan', name: '星罗计划', icon: 'monitor-play' },
+                    { id: 'profile', name: '我的', icon: 'user' }
+                ];
+
+                const homeActions = [
+                    { name: '加入保通', icon: 'badge-plus', bgClass: 'bg-blue-500', iconColor: 'text-blue-600', badge: '必读' },
+                    { name: '领万元奖', icon: 'gift', bgClass: 'bg-red-500', iconColor: 'text-red-500', badge: '金标' },
+                    { name: '导师带教', icon: 'graduation-cap', bgClass: 'bg-orange-500', iconColor: 'text-orange-500', badge: '1v1' },
+                    { name: 'i生活', icon: 'coffee', bgClass: 'bg-green-500', iconColor: 'text-green-500' },
+                    { name: '朋友圈', icon: 'aperture', bgClass: 'bg-purple-500', iconColor: 'text-purple-500', badge: '日签' },
+                    { name: '公司介绍', icon: 'building', bgClass: 'bg-indigo-500', iconColor: 'text-indigo-500' },
+                    { name: '计划书', icon: 'file-text', bgClass: 'bg-cyan-500', iconColor: 'text-cyan-500' },
+                    { name: '培训', icon: 'presentation', bgClass: 'bg-pink-500', iconColor: 'text-pink-500' },
+                    { name: '荣誉体系', icon: 'medal', bgClass: 'bg-yellow-500', iconColor: 'text-yellow-600' },
+                    { name: '增员专区', icon: 'user-plus', bgClass: 'bg-red-400', iconColor: 'text-red-500' }
+                ];
+
+                const profileTools = [
+                    { name: 'AI助手', icon: 'bot', color: 'text-blue-500' },
+                    { name: '底薪计算器', icon: 'calculator', color: 'text-cyan-500' },
+                    { name: '产品对比', icon: 'swords', color: 'text-orange-500' },
+                    { name: '全能核', icon: 'check-square', color: 'text-blue-600' },
+                    { name: '行事历', icon: 'calendar-days', color: 'text-green-500' },
+                    { name: '投保提醒', icon: 'bell-ring', color: 'text-red-500', badge: '实时' },
+                    { name: '海报中心', icon: 'image', color: 'text-purple-500' },
+                    { name: '电子名片', icon: 'contact-2', color: 'text-indigo-500' }
+                ];
+
+                const products = ref([
+                    { 
+                        id: 1, name: '众安尊享e生2026版', insurer: '众安财险', price: '142', commission: '0.35+30元',
+                        tags: ['金标', '互联网', '核保支持', '在线理赔'], 
+                        shortDesc: '拓展康复责任，原除外责任有机会标体承保',
+                        desc: '1、出生满30天~70周岁可投保；2、拓展特定疾病康复住院费用医疗保险金；3、拓展183家指定民营医院...',
+                        features: ['出生满30天-70周岁可投保', '拓展特定疾病康复住院医疗金']
+                    },
+                    { 
+                        id: 2, name: '妈咪保贝哪吒守护少儿重疾险', insurer: '复星联合健康', price: '3200', commission: '最高0.43',
+                        tags: ['互联网', '奖励规则'], 
+                        shortDesc: '打破常规价最低，保障全面，理赔人性化',
+                        desc: '疾病覆盖广，责任丰富，保障全面。含少儿特疾、罕见病额外赔付。',
+                        features: ['少儿特疾最高赔付200%', '罕见病额外赔付']
+                    },
+                    { 
+                        id: 3, name: '中意一生中意(福享版) 终身寿险', insurer: '中意人寿', price: '2000', commission: '52.6% + 888元',
+                        tags: ['金标', '互联网', '核保支持', '奖励规则'], 
+                        shortDesc: '重疾定寿 保费需≥2000',
+                        desc: '交费灵活，现价增速快，长期持有收益可观，适合作为资产传承及养老储备方案。',
+                        features: ['终身复利递增', '可对接养老社区']
+                    }
+                ]);
+
+                // ============= 导师 / 朋友圈 / 搜索 =============
+                const joinedTutorId = ref(null);
+                const tutorDataList = ref([
+                    { id: 1, name: '李晓锋导师', title: 'MDRT顶级会员 / 资深总监', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t1', desc: '10年保险老兵，擅长高端医疗及家庭资产配置，带出过10个百万圆桌会员。', tags: ['高端医疗', '资产传承', '极速开单'] },
+                    { id: 2, name: '王海燕导师', title: '金牌讲师 / 销售冠军', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=t2', desc: '精通各家重疾险条款对比，尤其擅长陌生拜访与微营销，转化率高达40%。', tags: ['重疾对比', '微信营销', '异议处理'] }
+                ]);
+                const joinTutor = (id) => {
+                    showToast('申请提交成功，请等待导师通过');
+                    setTimeout(() => { joinedTutorId.value = id; showToast('已成功加入导师团队！'); }, 1000);
+                };
+                const momentsCategory = ref('节日');
+                const isAIChatMode = ref(false);
+                const currentSearchTab = ref('all');
+                const searchTabsList = [
+                    { id: 'all', name: '全部' }, { id: 'product', name: '产品' },
+                    { id: 'plan', name: '计划书' }, { id: 'uw', name: '核保' },
+                    { id: 'training', name: '培训' }, { id: 'news', name: '头条' }
+                ];
+                const searchQuery = ref('');
+                const hasSearched = ref(false);
+                const searchHistory = ref(['康乾8号', '蓝医保', '年金险']);
+                const performSearch = () => {
+                    if (searchQuery.value.trim() === '') { showToast('请输入搜索内容'); return; }
+                    hasSearched.value = true;
+                    searchHistory.value = searchHistory.value.filter(item => item !== searchQuery.value);
+                    searchHistory.value.unshift(searchQuery.value);
+                };
+                const performSearchWord = (word) => { searchQuery.value = word; performSearch(); };
+                const startAIChat = () => { isAIChatMode.value = true; setTimeout(() => refreshIcons(), 50); };
+                const customizationStep = ref(0);
+
+                // ============= 计划书模块数据 =============
+                const planConfig = ref({ insuredName: '刘博洋', insuredSex: '男', showApplicant: false });
+                const myPlansList = ref([
+                    { id: 1, title: '刘博洋综合保障方案', date: '2026-03-08', type: '单人计划', name: '刘博洋', sex: '男', age: 30, premium: '2178.00' }
+                ]);
+                const companies = ref([
+                    { initial: 'A', name: '爱心人寿保险股份有限公司', type: '寿险公司', solvency: '良好', yield: '3.04%', rating: 'BB' }
+                ]);
+
+
+                // ============= 入职保通流程全家桶 (Onboard Module) =============
+                const onboardStep = ref(0);
+                const onboardAgree = ref(false); // 落地页首个勾选框
+                const idUploaded = ref(false);   // 身份核验是否完成上传
+                
+                const faceAgree = ref(false);    // 人脸识别页面勾选框
+                const isScanning = ref(false);   // 人脸识别雷达状态
+                
+                // 表单数据模型
+                const onboardForm = ref({
+                    residence: '山东省 青岛市', address: '', company: '保通山东分公司',
+                    politics: '群众', hasWorkExp: '无', workExps: [{}], punishment: '',
+                    hasInviter: '无', inviterId: '', phone: '185****5205', code: '', email: ''
+                });
+                const showCommitment = ref(false); // 合规声明弹窗
+                
+                // 签署协议模型
+                const signAgree = ref(false);
+                const showSignaturePad = ref(false);
+                const isDrawn = ref(false);
+
+                // 流程方法
+                const exitOnboard = () => {
+                    onboardStep.value = 0;
+                    activePage.value = 'main';
+                    // 不清理数据以便下次进来还在原进度（真实App一般存本地）
+                };
+
+                const startOnboard = () => {
+                    if (!onboardAgree.value) {
+                        showToast('请先勾选同意查询核实条款');
+                        return;
+                    }
+                    onboardStep.value = 1;
+                    refreshIcons();
+                };
+
+                const simulateIdUpload = () => {
+                    showToast('正在调用相机扫描...');
+                    setTimeout(() => { idUploaded.value = true; showToast('识别成功'); }, 1000);
+                };
+
+                const goToFaceRec = () => {
+                    onboardStep.value = 2;
+                    refreshIcons();
+                };
+
+                const startFaceScan = () => {
+                    isScanning.value = true;
+                    setTimeout(() => {
+                        isScanning.value = false;
+                        showToast('认证通过');
+                        onboardStep.value = 3;
+                        refreshIcons();
+                    }, 2000);
+                };
+
+                const submitInfo = () => {
+                    showCommitment.value = true;
+                };
+
+                const confirmCommitment = () => {
+                    showCommitment.value = false;
+                    onboardStep.value = 4;
+                    refreshIcons();
+                };
+
+                const startExam = () => {
+                    onboardStep.value = 5;
+                    refreshIcons();
+                };
+
+                const answerQuestion = (isCorrect) => {
+                    if(!isCorrect) {
+                        showToast('回答错误，正确答案为 C');
+                        return;
+                    }
+                    showToast('回答正确，考试通过！');
+                    setTimeout(() => {
+                        onboardStep.value = 6;
+                        refreshIcons();
+                    }, 800);
+                };
+
+                const openSignaturePad = () => {
+                    showSignaturePad.value = true;
+                    isDrawn.value = false;
+                };
+
+                const simulateDrawing = () => {
+                    isDrawn.value = true;
+                };
+
+                const confirmSignature = () => {
+                    if(!isDrawn.value) { showToast('请先完成签名'); return; }
+                    showSignaturePad.value = false;
+                    onboardStep.value = 7;
+                    refreshIcons();
+                };
+
+                const submitOnboardFinal = () => {
+                    showToast('资料已提交');
+                    onboardStep.value = 8;
+                    refreshIcons();
+                };
+
+
+                // ============= 其他基础交互逻辑 =============
+                const handleHomeAction = (item) => {
+                    if(item.name === '加入保通') { onboardStep.value = 0; goToPage('onboard'); }
+                    else if(item.name === '领万元奖') goToPage('activityReward');
+                    else if(item.name === '导师带教') goToPage('tutorList');
+                    else if(item.name === 'i生活') goToPage('iLife');
+                    else if(item.name === '朋友圈') goToPage('momentsAssistant');
+                    else if(item.name === '公司介绍') goToPage('companyIntro');
+                    else if(item.name === '计划书') currentTab.value = 'plan';
+                    else if(item.name === '培训') goToPage('training');
+                    else if(item.name === '荣誉体系') showToast('进入荣誉体系/业绩排行');
+                    else if(item.name === '增员专区') goToPage('recruit');
+                    else showToast(`进入模块: ${item.name}`);
+                };
+
+                const handleProfileTool = (tool) => { showToast(`打开工具: ${tool.name}`); };
+
+                const isQuoteModalOpen = ref(false);
+                const currentProduct = ref(null);
+                const selectedProduct = ref(null);
+
+                const openQuoteModal = (prod) => {
+                    selectedProduct.value = prod;
+                    isQuoteModalOpen.value = true;
+                    setTimeout(() => refreshIcons(), 50);
+                };
+
+                const closeQuoteModal = () => { isQuoteModalOpen.value = false; };
+                const handleGeneratePlan = () => {
+                    closeQuoteModal();
+                    goToPage('planDetail');
+                    showToast('计划书生成成功');
+                };
+
+                const refreshIcons = () => {
+                    nextTick(() => { if(window.lucide) lucide.createIcons(); });
+                };
+
+                watch([activePage, currentTab, isAIChatMode, idUploaded, isQuoteModalOpen, onboardStep, currentSearchTab, momentsCategory, customizationStep], refreshIcons);
+
+                onMounted(() => { refreshIcons(); });
+
+                return {
+                    activePage, currentTab, isDarkStatus, goToPage, goBack,
+                    tabs, homeActions, profileTools, products,
+                    handleHomeAction, handleProfileTool,
+                    toastMessage, showToast,
+                    // 导师 / 朋友圈 / 搜索 & AI
+                    joinedTutorId, tutorDataList, joinTutor, momentsCategory,
+                    searchTabsList, searchQuery, hasSearched, searchHistory, currentSearchTab,
+                    performSearch, performSearchWord, isAIChatMode, startAIChat,
+                    customizationStep,
+                    // Onboard 全家桶
+                    onboardStep, onboardAgree, idUploaded, faceAgree, isScanning, 
+                    onboardForm, showCommitment, signAgree, showSignaturePad, isDrawn,
+                    startOnboard, simulateIdUpload, goToFaceRec, startFaceScan, 
+                    submitInfo, confirmCommitment, startExam, answerQuestion, 
+                    openSignaturePad, simulateDrawing, confirmSignature, submitOnboardFinal, exitOnboard,
+                    // Product & Quote
+                    currentProduct, isQuoteModalOpen, selectedProduct,
+                    openQuoteModal, closeQuoteModal, handleGeneratePlan,
+                    // Plan specific
+                    planConfig, myPlansList, companies
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

@@ -4,7 +4,208 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1d9ba269-71ca-4b30-bfad-ffa2d12ca462" name="Changes" comment="1" />
+    <list default="true" id="1d9ba269-71ca-4b30-bfad-ffa2d12ca462" name="Changes" comment="1">
+      <change afterPath="$PROJECT_DIR$/05 展业APP i云保手册/.~展业端.docx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/13 展业APP PRD.docx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/14 C端小程序 PRD.docx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/4132d8ba9cfdb74927f2384377e1d3cf.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142037628.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038040.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038044.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038071.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038416.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038662.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038692.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038848.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142038980.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142039027.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142039059.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142039367.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142039726.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142043773.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142327306.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142327742.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328060.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328349.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328366.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328640.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328646.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328677.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328752.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142328843.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142402727.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142403638.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142618811.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142619580.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142619740.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142619961.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142620118.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142620735.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142620988.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142622321.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142623902.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142625797.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142627141.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142710723.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142756050.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142756916.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142757302.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142757321.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142757356.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308142757457.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143326689.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143327083.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143327689.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143327944.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143328049.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143328089.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143328677.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143328874.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143407922.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143407985.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143407987.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143408082.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143408344.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143408488.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143408851.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143408894.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143408924.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143409192.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143410854.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143537502.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538243.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538559.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538592.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538665.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538737.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538746.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143538792.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143539397.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143539529.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143539562.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143539628.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143540659.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143540970.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143620298.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143620345.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143620497.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143653543.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143653862.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143653885.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143756511.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757048.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757052.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757274.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757283.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757378.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757524.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143757640.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143831651.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143831827.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143832150.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143832301.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143832310.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143832397.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143832634.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143833537.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143855975.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143856187.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143944697.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143947594.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308143948102.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144046088.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144046356.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144046963.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144046976.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144046988.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144047041.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144047075.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144123455.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144219134.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144632025.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144633040.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144729632.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144730130.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144730463.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144730498.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144730541.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144730564.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144730629.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731062.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731159.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731329.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731377.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731382.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731597.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144731826.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308144733716.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145021344.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145022542.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145022902.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145051544.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145051570.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145051596.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145051871.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145052248.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145052532.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145052538.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145052781.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145052937.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145054219.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145056485.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145059051.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145136643.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640-20260308145136998.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/640.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145303016.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145333392.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145459226.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145536125.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145546978.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145616855.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145637592.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145654081.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145709372.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145803206.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145822282.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308145912659.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150054823.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150139019.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150226854.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150258528.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150331596.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150422984.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150513892.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150653263.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150739239.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150800181.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150812745.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150922119.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308150940696.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.assets/image-20260308151026048.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/08 需求PRD/黑湖小工单.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/09 原型/APP.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/09 原型/原型模板.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/05 展业APP i云保手册/i云保功能点梳理.docx" beforeDir="false" afterPath="$PROJECT_DIR$/05 展业APP i云保手册/i云保功能点梳理.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/06 C端 水星保 手册/水星保操作手册.docx" beforeDir="false" afterPath="$PROJECT_DIR$/06 C端 水星保 手册/水星保操作手册.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/ins-ai-PRD-V1.0.docx" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/12 ins-ai-PRD-V1.0.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/ins-ai-PRD-V1.1-增补版.docx" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/13 ins-ai-PRD-V1.1-增补版.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/人管模块PRD_V1.0.docx" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/07 人管模块PRD_V1.0.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/保险中介平台-报价模块PRD需求文档.md" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/05 保险中介平台-报价模块PRD需求文档.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/合规模块_PRD_V1.0.docx" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/11 合规模块_PRD_V1.0.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/多级结算模块PRD.md" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/10 多级结算模块PRD.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/客户模块PRD_V1.0.docx" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/06 客户模块PRD_V1.0.docx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/设置模块-PRD需求文档-V1.0.md" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/09 设置模块-PRD需求文档-V1.0.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/08 需求PRD/财务模块PRD需求文档_V1.0.md" beforeDir="false" afterPath="$PROJECT_DIR$/08 需求PRD/08 财务模块PRD需求文档_V1.0.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/09 原型/产品管理.html" beforeDir="false" afterPath="$PROJECT_DIR$/09 原型/PC端.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/10 技术博客/00 大纲.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/10 技术博客/第001篇_中国保险市场全景.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/10 技术博客/第002篇_保险中介机构深度解析.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/10 技术博客/第003篇_车险的前世今生.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/10 技术博客/第004篇_非车险全景_上篇.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/10 技术博客/第004篇_非车险全景_下篇.md" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -19,9 +220,9 @@
       </MavenGeneralSettings>
     </option>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="3AbYbk94tbWkUmPjEEEIRohaSTB" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -34,6 +235,10 @@
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/liuyunkai/Documents/workspace/保险中介资料",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "MavenSettings",
     "vue.rearranger.settings.migration": "true"
@@ -56,6 +261,8 @@
       <option name="presentableId" value="Default" />
       <updated>1772862812211</updated>
       <workItem from="1772862813581" duration="157000" />
+      <workItem from="1772933152993" duration="112000" />
+      <workItem from="1772956323985" duration="612000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -65,7 +272,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772862840613</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="1">
+      <option name="closed" value="true" />
+      <created>1772933252866</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1772933252866</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
